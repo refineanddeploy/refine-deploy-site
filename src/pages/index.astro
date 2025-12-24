@@ -1,9 +1,9 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
-import ProjectCard from '@components/astro/ProjectCard.astro';
+import HorizontalProjects from '@components/react/HorizontalProjects';
 import ServiceCard from '@components/astro/ServiceCard.astro';
 
-// Sample data - will be replaced with real content later
+// Project data matching your design
 const recentProjects = [
   {
     title: "Adventure Co.",
@@ -31,12 +31,12 @@ const recentProjects = [
 const services = [
   {
     title: "UX/UI Design",
-    description: "[SERVICE_DESCRIPTION_1]",
+    description: "We don't just make pretty pictures. We design intuitive, user-centered interfaces that solve problems, boost engagement, and drive your business goals.",
     icon: "design"
   },
   {
     title: "Web & App Dev",
-    description: "[SERVICE_DESCRIPTION_2]",
+    description: "Get a fast, secure, and scalable digital product. We leverage modern frameworks to deliver high-quality code that powers everything from custom CMSs to dynamic e-commerce platforms.",
     icon: "dev"
   }
 ];
@@ -44,113 +44,171 @@ const services = [
 
 <BaseLayout title="Home">
   <!-- Hero Section -->
-  <section class="relative bg-gray-900 text-white py-24 md:py-32">
-    <div class="container mx-auto px-4">
-      <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-4xl md:text-6xl font-bold mb-6">
-          From scattered ideas to<br />
-          seamless websites.
-        </h1>
-        <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-          [HERO_SUBHEADLINE]
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+  <section class="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+    <!-- Background decorative elements -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute top-20 left-10 w-72 h-72 bg-blue-200 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl opacity-30 animate-blob"></div>
+      <div class="absolute top-40 right-10 w-72 h-72 bg-purple-200 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+      <div class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-200 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <div class="container mx-auto px-6 relative z-10">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <!-- Left side - Text content -->
+        <div>
+          <h1 class="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
+            From scattered ideas to<br />
+            seamless websites.
+          </h1>
+          <p class="text-lg text-gray-600 dark:text-gray-300 mt-8 mb-10 max-w-xl">
+            We create high-performing sites for all kinds of teams—new, small, or scaling. Whatever stage you're in, we build custom websites <span class="text-blue-600 dark:text-blue-400 font-medium">that work</span> and <span class="text-orange-600 dark:text-orange-400 font-medium">grow with you.</span>
+          </p>
           <a
-            href="/contact"
-            class="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            href="/about"
+            class="inline-flex items-center px-8 py-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300 font-medium group"
           >
             More About Us
-          </a>
-          <a
-            href="/portfolio"
-            class="px-8 py-4 bg-transparent text-white rounded-lg border-2 border-white hover:bg-white hover:text-gray-900 transition-all font-medium"
-          >
-            View Portfolio
+            <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
           </a>
         </div>
-      </div>
 
-      <!-- Hero Image Placeholder -->
-      <div class="mt-16 max-w-5xl mx-auto">
-        <div class="bg-gray-800 rounded-xl p-8 text-center">
-          <p class="text-gray-400">[HERO_IMAGE_PLACEHOLDER]</p>
+        <!-- Right side - Device mockups -->
+        <div class="relative">
+          <!-- Desktop mockup - tilted -->
+          <div class="absolute top-0 right-0 w-96 h-64 bg-white dark:bg-gray-800 rounded-lg shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex gap-2">
+                <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="bg-gray-100 dark:bg-gray-700 h-32 rounded-lg flex items-center justify-center">
+                <span class="text-gray-500 dark:text-gray-400 text-sm">Kill the busywork.<br/>Keep the momentum.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tablet mockup -->
+          <div class="absolute top-20 left-0 w-64 h-44 bg-white dark:bg-gray-800 rounded-lg shadow-xl transform -rotate-6 hover:rotate-0 transition-transform duration-500">
+            <div class="p-3">
+              <div class="bg-gradient-to-br from-pink-100 to-pink-50 dark:from-pink-900 dark:to-pink-800 h-36 rounded-lg p-4">
+                <div class="text-xs text-gray-600 dark:text-gray-300">Acme Beauty</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone mockups -->
+          <div class="absolute bottom-0 right-20 w-32 h-56 bg-white dark:bg-gray-800 rounded-2xl shadow-xl transform rotate-12 hover:rotate-6 transition-transform duration-500">
+            <div class="p-2">
+              <div class="bg-gradient-to-br from-blue-100 to-cyan-50 dark:from-blue-900 dark:to-cyan-800 h-52 rounded-xl p-3">
+                <div class="text-xs">Discover<br/>mindful hiking</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Recent Projects Section -->
-  <section class="py-20 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <div class="mb-12">
-        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          Recent Projects
-        </h2>
-        <p class="text-lg text-gray-600">
-          [PROJECTS_DESCRIPTION]
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {recentProjects.map((project) => (
-          <ProjectCard {...project} href="/portfolio" />
-        ))}
-      </div>
-
-      <div class="mt-12 text-center">
-        <a
-          href="/portfolio"
-          class="inline-block px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
-        >
-          View All Projects
-        </a>
-      </div>
+  <!-- Recent Projects Section with horizontal scroll -->
+  <section class="py-20 bg-white dark:bg-gray-900">
+    <div class="container mx-auto px-6 mb-12">
+      <h2 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
+        Recent Projects
+      </h2>
+      <div class="w-24 h-1 bg-orange-500 mt-4"></div>
     </div>
+
+    <HorizontalProjects projects={recentProjects} client:visible />
   </section>
 
   <!-- Services Section -->
-  <section class="py-20 bg-white">
-    <div class="container mx-auto px-4">
-      <div class="mb-12">
-        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          Our Services
-        </h2>
-        <p class="text-lg text-gray-600">
-          [SERVICES_DESCRIPTION]
-        </p>
-      </div>
+  <section class="py-20 bg-gray-50 dark:bg-gray-800">
+    <div class="container mx-auto px-6">
+      <h2 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+        Our Services
+      </h2>
+      <div class="w-24 h-1 bg-orange-500 mb-12"></div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl">
         {services.map((service) => (
-          <ServiceCard {...service} href="/services" />
+          <div class="group relative">
+            <!-- Card with hover tilt effect -->
+            <div class="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 dark:border-gray-700">
+              <!-- Icon placeholder with gradient background -->
+              <div class="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <div class="w-8 h-8 bg-white rounded"></div>
+              </div>
+
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                {service.title}
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                {service.description}
+              </p>
+            </div>
+          </div>
         ))}
       </div>
     </div>
   </section>
 
   <!-- CTA Section -->
-  <section class="py-20 bg-blue-600 text-white">
-    <div class="container mx-auto px-4 text-center">
-      <h2 class="text-3xl md:text-4xl font-bold mb-6">
-        [CTA_HEADLINE]
+  <section class="py-20 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-800">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
+        Ready to bring your ideas to life?
       </h2>
       <p class="text-xl mb-10 max-w-2xl mx-auto text-blue-100">
-        [CTA_DESCRIPTION]
+        Let's build something amazing together. Start your project today.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a
           href="/contact"
-          class="px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+          class="px-8 py-4 bg-white text-blue-600 rounded-full hover:bg-gray-100 transition-colors font-medium"
         >
           Get Started Today
         </a>
         <a
-          href="/services"
-          class="px-8 py-4 bg-transparent text-white rounded-lg border-2 border-white hover:bg-white hover:text-blue-600 transition-all font-medium"
+          href="/portfolio"
+          class="px-8 py-4 bg-transparent text-white rounded-full border-2 border-white hover:bg-white hover:text-blue-600 transition-all font-medium"
         >
-          Learn More
+          View Our Work
         </a>
       </div>
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+</style>
