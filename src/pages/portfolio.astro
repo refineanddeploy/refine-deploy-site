@@ -1,0 +1,120 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import ProjectCard from '@components/astro/ProjectCard.astro';
+
+const projects = [
+  {
+    title: "Adventure Co.",
+    category: "Sports",
+    year: "2025",
+    tags: ["Mobile", "Custom", "E-commerce"],
+    image: "/api/placeholder/600/400"
+  },
+  {
+    title: "One Creative",
+    category: "Arts & Media",
+    year: "2025",
+    tags: ["Responsive", "Re-design", "CMS"],
+    image: "/api/placeholder/600/400"
+  },
+  {
+    title: "Acme Beauty",
+    category: "Beauty",
+    year: "2025",
+    tags: ["Desktop", "Custom", "Booking"],
+    image: "/api/placeholder/600/400"
+  },
+  {
+    title: "Tech Solutions Inc.",
+    category: "Technology",
+    year: "2024",
+    tags: ["SaaS", "Dashboard", "API"],
+    image: "/api/placeholder/600/400"
+  },
+  {
+    title: "Local Restaurant",
+    category: "Food & Beverage",
+    year: "2024",
+    tags: ["Mobile-first", "Ordering", "SEO"],
+    image: "/api/placeholder/600/400"
+  },
+  {
+    title: "Fitness Studio",
+    category: "Health & Wellness",
+    year: "2024",
+    tags: ["Booking", "Members", "Mobile"],
+    image: "/api/placeholder/600/400"
+  }
+];
+
+const categories = ["All", "Sports", "Arts & Media", "Beauty", "Technology", "Food & Beverage", "Health & Wellness"];
+---
+
+<BaseLayout title="Portfolio">
+  <!-- Hero Section -->
+  <section class="py-20 bg-gray-900 text-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+          Our Portfolio
+        </h1>
+        <p class="text-xl text-gray-300">
+          [PORTFOLIO_HERO_DESCRIPTION]
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter Buttons (static for now) -->
+  <section class="py-8 bg-white border-b">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-wrap gap-4 justify-center">
+        {categories.map((category) => (
+          <button class={`px-6 py-2 rounded-full transition-colors ${
+            category === "All"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}>
+            {category}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects Grid -->
+  <section class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {projects.map((project) => (
+          <ProjectCard {...project} href="#" />
+        ))}
+      </div>
+
+      <!-- Load More Button -->
+      <div class="mt-16 text-center">
+        <button class="px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">
+          Load More Projects
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-20 bg-blue-600 text-white">
+    <div class="container mx-auto px-4 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">
+        Like What You See?
+      </h2>
+      <p class="text-xl mb-10 max-w-2xl mx-auto text-blue-100">
+        [PORTFOLIO_CTA_DESCRIPTION]
+      </p>
+      <a
+        href="/contact"
+        class="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+      >
+        Start Your Project
+      </a>
+    </div>
+  </section>
+</BaseLayout>

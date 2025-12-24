@@ -1,0 +1,75 @@
+---
+const currentYear = new Date().getFullYear();
+
+const footerLinks = {
+  company: [
+    { href: '/about', label: 'About Us' },
+    { href: '/portfolio', label: 'Portfolio' },
+    { href: '/services', label: 'Services' },
+    { href: '/contact', label: 'Contact' },
+  ],
+  services: [
+    { href: '/services#web-design', label: 'Web Design' },
+    { href: '/services#development', label: 'Development' },
+    { href: '/services#seo', label: 'SEO Optimization' },
+    { href: '/services#maintenance', label: 'Maintenance' },
+  ],
+};
+---
+
+<footer class="bg-gray-900 text-gray-300 pt-16 pb-8">
+  <div class="container mx-auto px-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+      <!-- Brand Column -->
+      <div class="md:col-span-2">
+        <h3 class="text-2xl font-bold text-white mb-4">Refine & Deploy</h3>
+        <p class="text-gray-400 mb-4 max-w-md">
+          [FOOTER_DESCRIPTION]
+        </p>
+      </div>
+
+      <!-- Company Links -->
+      <div>
+        <h4 class="text-white font-semibold mb-4">Company</h4>
+        <ul class="space-y-2">
+          {footerLinks.company.map((link) => (
+            <li>
+              <a href={link.href} class="hover:text-white transition-colors">
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Services Links -->
+      <div>
+        <h4 class="text-white font-semibold mb-4">Services</h4>
+        <ul class="space-y-2">
+          {footerLinks.services.map((link) => (
+            <li>
+              <a href={link.href} class="hover:text-white transition-colors">
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-sm text-gray-400">
+        © {currentYear} Refine & Deploy. All rights reserved.
+      </p>
+      <div class="flex gap-6">
+        <a href="/privacy" class="text-sm hover:text-white transition-colors">
+          Privacy Policy
+        </a>
+        <a href="/terms" class="text-sm hover:text-white transition-colors">
+          Terms of Service
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,135 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import ServiceCard from '@components/astro/ServiceCard.astro';
+
+const services = [
+  {
+    title: "Web Design",
+    description: "[WEB_DESIGN_DESCRIPTION]",
+    icon: "design",
+  },
+  {
+    title: "Web Development",
+    description: "[WEB_DEV_DESCRIPTION]",
+    icon: "dev",
+  },
+  {
+    title: "E-commerce Solutions",
+    description: "[ECOMMERCE_DESCRIPTION]",
+    icon: "cart",
+  },
+  {
+    title: "SEO Optimization",
+    description: "[SEO_DESCRIPTION]",
+    icon: "search",
+  },
+  {
+    title: "Maintenance & Support",
+    description: "[MAINTENANCE_DESCRIPTION]",
+    icon: "support",
+  },
+  {
+    title: "Performance Optimization",
+    description: "[PERFORMANCE_DESCRIPTION]",
+    icon: "speed",
+  },
+];
+---
+
+<BaseLayout title="Services">
+  <!-- Hero Section -->
+  <section class="py-20 bg-gray-900 text-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+          Our Services
+        </h1>
+        <p class="text-xl text-gray-300">
+          [SERVICES_HERO_DESCRIPTION]
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Grid -->
+  <section class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {services.map((service) => (
+          <ServiceCard {...service} href="#" />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Process Section -->
+  <section class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
+          Our Process
+        </h2>
+
+        <div class="space-y-8">
+          <div class="flex gap-6">
+            <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+              1
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">Discovery</h3>
+              <p class="text-gray-600">[PROCESS_STEP_1]</p>
+            </div>
+          </div>
+
+          <div class="flex gap-6">
+            <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+              2
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">Design</h3>
+              <p class="text-gray-600">[PROCESS_STEP_2]</p>
+            </div>
+          </div>
+
+          <div class="flex gap-6">
+            <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+              3
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">Development</h3>
+              <p class="text-gray-600">[PROCESS_STEP_3]</p>
+            </div>
+          </div>
+
+          <div class="flex gap-6">
+            <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+              4
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">Launch</h3>
+              <p class="text-gray-600">[PROCESS_STEP_4]</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-20 bg-blue-600 text-white">
+    <div class="container mx-auto px-4 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">
+        Ready to Get Started?
+      </h2>
+      <p class="text-xl mb-10 max-w-2xl mx-auto text-blue-100">
+        [SERVICES_CTA_DESCRIPTION]
+      </p>
+      <a
+        href="/contact"
+        class="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+      >
+        Contact Us Today
+      </a>
+    </div>
+  </section>
+</BaseLayout>
