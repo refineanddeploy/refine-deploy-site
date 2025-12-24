@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Custom design tokens */
+@theme {
+  /* Brand colors - Refine & Deploy brand palette */
+  --color-brand-50: oklch(0.97 0.02 250);
+  --color-brand-100: oklch(0.93 0.04 250);
+  --color-brand-200: oklch(0.86 0.08 250);
+  --color-brand-300: oklch(0.76 0.12 250);
+  --color-brand-400: oklch(0.66 0.16 250);
+  --color-brand-500: oklch(0.55 0.2 250);  /* Primary */
+  --color-brand-600: oklch(0.45 0.18 250);
+  --color-brand-700: oklch(0.38 0.15 250);
+  --color-brand-800: oklch(0.30 0.12 250);
+  --color-brand-900: oklch(0.22 0.08 250);
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-display: system-ui, -apple-system, sans-serif;
+
+  /* Spacing */
+  --spacing-section: 5rem;
+  --spacing-section-lg: 7rem;
+}
+
+/* Base styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans text-gray-900 antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold tracking-tight;
+  }
+}

@@ -1,0 +1,29 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Home">
+  <main class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-16">
+      <h1 class="text-4xl md:text-6xl font-bold text-center mb-8">
+        [HERO_HEADLINE]
+      </h1>
+      <p class="text-xl text-center text-gray-600 mb-12">
+        [HERO_SUBHEADLINE]
+      </p>
+      <div class="flex justify-center gap-4">
+        <button class="px-8 py-3 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors">
+          [CTA_PRIMARY]
+        </button>
+        <button class="px-8 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+          [CTA_SECONDARY]
+        </button>
+      </div>
+
+      <!-- Test that Tailwind and React work -->
+      <div class="mt-16 text-center text-sm text-gray-500">
+        <p>Astro + React + Tailwind CSS v4 configured successfully!</p>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
