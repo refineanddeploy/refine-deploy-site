@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import HorizontalProjects from '@components/react/HorizontalProjects';
+import InteractivePhone from '@components/react/InteractivePhone';
 
-// Project data
+// Project data for horizontal scroll
 const recentProjects = [
   {
     title: "Adventure Co.",
@@ -24,6 +25,28 @@ const recentProjects = [
     year: "2025",
     tags: ["Desktop", "Custom"],
     image: "/api/placeholder/600/400"
+  }
+];
+
+// Interactive phone showcase projects (using embeddable sites)
+const showcaseProjects = [
+  {
+    title: "Wikipedia",
+    category: "Knowledge",
+    url: "https://en.m.wikipedia.org/wiki/Web_design",
+    description: "Mobile-optimized browsing experience"
+  },
+  {
+    title: "CSS Zen Garden",
+    category: "Design",
+    url: "http://www.csszengarden.com",
+    description: "The beauty of CSS design"
+  },
+  {
+    title: "A Single Div",
+    category: "Creative",
+    url: "https://a.singlediv.com",
+    description: "CSS art with one element"
   }
 ];
 
@@ -152,8 +175,15 @@ const services = [
     </div>
   </section>
 
+  <!-- Interactive Phone Showcase Section -->
+  <section class="section-padding bg-primary overflow-hidden">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <InteractivePhone projects={showcaseProjects} client:visible />
+    </div>
+  </section>
+
   <!-- Recent Projects Section -->
-  <section class="section-padding bg-primary">
+  <section class="section-padding bg-secondary">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 mb-8 lg:mb-12">
       <h2 class="text-primary">Recent Projects</h2>
       <div class="w-16 sm:w-20 h-1 bg-accent mt-4 rounded-full"></div>
@@ -163,7 +193,7 @@ const services = [
   </section>
 
   <!-- Services Section -->
-  <section class="section-padding bg-secondary">
+  <section class="section-padding bg-primary">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <h2 class="text-primary mb-4">Our Services</h2>
       <div class="w-16 sm:w-20 h-1 bg-accent mb-10 lg:mb-16 rounded-full"></div>

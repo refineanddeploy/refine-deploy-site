@@ -1,5 +1,34 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
+import InteractivePhone from '@components/react/InteractivePhone';
+
+// Interactive demo projects - embeddable sites users can navigate
+const interactiveProjects = [
+  {
+    title: "Wikipedia",
+    category: "Knowledge",
+    url: "https://en.m.wikipedia.org/wiki/Web_design",
+    description: "Mobile-optimized browsing"
+  },
+  {
+    title: "CSS Zen Garden",
+    category: "Design",
+    url: "http://www.csszengarden.com",
+    description: "The beauty of CSS design"
+  },
+  {
+    title: "CodePen",
+    category: "Development",
+    url: "https://codepen.io/trending",
+    description: "Creative code playground"
+  },
+  {
+    title: "A Single Div",
+    category: "Creative",
+    url: "https://a.singlediv.com",
+    description: "CSS art masterpieces"
+  }
+];
 
 const projects = [
   {
@@ -62,8 +91,22 @@ const categories = ["All", "Sports", "Arts & Media", "Beauty", "Technology", "Fo
     </div>
   </section>
 
+  <!-- Interactive Phone Showcase -->
+  <section class="section-padding bg-primary overflow-hidden">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12 lg:mb-16">
+        <span class="text-accent text-sm font-medium uppercase tracking-wide">Interactive Demo</span>
+        <h2 class="text-primary mt-2">Try It Yourself</h2>
+        <p class="text-secondary mt-4 max-w-2xl mx-auto">
+          Experience websites the way your customers will. Navigate, scroll, and interact with live projects right here.
+        </p>
+      </div>
+      <InteractivePhone projects={interactiveProjects} client:visible />
+    </div>
+  </section>
+
   <!-- Filter Buttons -->
-  <section class="py-6 sm:py-8 bg-primary border-b border-theme">
+  <section class="py-6 sm:py-8 bg-secondary border-b border-theme">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-wrap gap-2 sm:gap-3 justify-center">
         {categories.map((category, index) => (
@@ -80,7 +123,7 @@ const categories = ["All", "Sports", "Arts & Media", "Beauty", "Technology", "Fo
   </section>
 
   <!-- Projects Grid -->
-  <section class="section-padding bg-primary">
+  <section class="section-padding bg-secondary">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {projects.map((project) => (
