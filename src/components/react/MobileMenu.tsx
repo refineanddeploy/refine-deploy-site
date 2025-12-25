@@ -81,8 +81,11 @@ export default function MobileMenu({ navLinks }: Props) {
 
             {/* Slide-in Panel */}
             <motion.nav
-              className="fixed top-0 right-0 h-full w-[85vw] max-w-sm z-[58]
-                         bg-primary border-l border-theme shadow-elevated"
+              className="fixed top-0 right-0 h-full w-[85vw] max-w-sm z-[58] shadow-2xl"
+              style={{
+                background: "rgb(var(--color-bg-primary))",
+                borderLeft: "1px solid rgba(var(--color-border), 0.2)"
+              }}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -92,20 +95,30 @@ export default function MobileMenu({ navLinks }: Props) {
                 stiffness: 300,
               }}
             >
-              <div className="flex flex-col h-full pt-24 pb-8 px-6">
+              <div className="flex flex-col h-full pt-24 pb-8 px-8">
                 {/* Navigation Links */}
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-2">
                   {navLinks.map((link, index) => (
                     <motion.a
                       key={link.href}
                       href={link.href}
-                      className="py-4 text-2xl font-medium text-primary
-                                 border-b border-subtle
-                                 hover:text-accent transition-colors"
+                      className="py-4 px-2 text-xl font-semibold rounded-xl transition-all duration-200"
+                      style={{
+                        color: "rgb(var(--color-text-primary))",
+                        borderBottom: "1px solid rgba(var(--color-border), 0.1)"
+                      }}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.05 + index * 0.05, duration: 0.3 }}
                       onClick={() => setIsOpen(false)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = "rgb(var(--color-accent))";
+                        e.currentTarget.style.background = "rgba(var(--color-accent), 0.08)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = "rgb(var(--color-text-primary))";
+                        e.currentTarget.style.background = "transparent";
+                      }}
                     >
                       {link.label}
                     </motion.a>
@@ -115,8 +128,12 @@ export default function MobileMenu({ navLinks }: Props) {
                 {/* CTA Button */}
                 <motion.a
                   href="/contact"
-                  className="mt-8 py-4 text-center rounded-full text-lg font-medium
-                             bg-accent text-white hover:opacity-90 transition-opacity"
+                  className="mt-10 py-4 text-center rounded-full text-lg font-semibold
+                             hover:opacity-90 transition-opacity"
+                  style={{
+                    background: "rgb(var(--color-accent))",
+                    color: "#ffffff"
+                  }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25, duration: 0.3 }}
@@ -135,10 +152,10 @@ export default function MobileMenu({ navLinks }: Props) {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.35, duration: 0.3 }}
                 >
-                  <p className="text-sm text-tertiary">
+                  <p className="text-sm font-medium" style={{ color: "rgb(var(--color-text-secondary))" }}>
                     Refine & Deploy
                   </p>
-                  <p className="text-xs text-tertiary mt-1">
+                  <p className="text-xs mt-1" style={{ color: "rgb(var(--color-text-tertiary))" }}>
                     Web Design & Development
                   </p>
                 </motion.div>
