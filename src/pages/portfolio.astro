@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
-import ProjectCard from '@components/astro/ProjectCard.astro';
 
 const projects = [
   {
@@ -52,28 +51,26 @@ const categories = ["All", "Sports", "Arts & Media", "Beauty", "Technology", "Fo
 
 <BaseLayout title="Portfolio">
   <!-- Hero Section -->
-  <section class="py-20 bg-gray-900 text-white">
-    <div class="container mx-auto px-4">
+  <section class="section-padding bg-secondary">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-6">
-          Our Portfolio
-        </h1>
-        <p class="text-xl text-gray-300">
+        <h1 class="text-primary mb-6">Our Portfolio</h1>
+        <p class="text-secondary text-lg sm:text-xl max-w-2xl mx-auto">
           [PORTFOLIO_HERO_DESCRIPTION]
         </p>
       </div>
     </div>
   </section>
 
-  <!-- Filter Buttons (static for now) -->
-  <section class="py-8 bg-white border-b">
-    <div class="container mx-auto px-4">
-      <div class="flex flex-wrap gap-4 justify-center">
-        {categories.map((category) => (
-          <button class={`px-6 py-2 rounded-full transition-colors ${
-            category === "All"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+  <!-- Filter Buttons -->
+  <section class="py-6 sm:py-8 bg-primary border-b border-theme">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-wrap gap-2 sm:gap-3 justify-center">
+        {categories.map((category, index) => (
+          <button class={`px-4 sm:px-6 py-2 rounded-full text-sm font-medium transition-colors press-effect ${
+            index === 0
+              ? "bg-accent text-white"
+              : "bg-tertiary text-secondary hover:bg-secondary"
           }`}>
             {category}
           </button>
@@ -83,17 +80,44 @@ const categories = ["All", "Sports", "Arts & Media", "Beauty", "Technology", "Fo
   </section>
 
   <!-- Projects Grid -->
-  <section class="py-20 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+  <section class="section-padding bg-primary">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {projects.map((project) => (
-          <ProjectCard {...project} href="#" />
+          <article class="card card-hover overflow-hidden group">
+            <div class="aspect-[4/3] bg-tertiary overflow-hidden">
+              <img
+                src={project.image}
+                alt={project.title}
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+            <div class="p-5 sm:p-6">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs sm:text-sm font-medium text-accent">
+                  {project.category}
+                </span>
+                <span class="text-xs sm:text-sm text-tertiary">
+                  {project.year}
+                </span>
+              </div>
+              <h3 class="text-primary mb-3">{project.title}</h3>
+              <div class="flex flex-wrap gap-2">
+                {project.tags.map((tag) => (
+                  <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-tertiary text-secondary">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </article>
         ))}
       </div>
 
       <!-- Load More Button -->
-      <div class="mt-16 text-center">
-        <button class="px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">
+      <div class="mt-12 sm:mt-16 text-center">
+        <button class="btn-secondary press-effect">
           Load More Projects
         </button>
       </div>
@@ -101,17 +125,16 @@ const categories = ["All", "Sports", "Arts & Media", "Beauty", "Technology", "Fo
   </section>
 
   <!-- CTA Section -->
-  <section class="py-20 bg-blue-600 text-white">
-    <div class="container mx-auto px-4 text-center">
-      <h2 class="text-3xl md:text-4xl font-bold mb-6">
-        Like What You See?
-      </h2>
-      <p class="text-xl mb-10 max-w-2xl mx-auto text-blue-100">
+  <section class="section-padding bg-accent text-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-white mb-4 sm:mb-6">Like What You See?</h2>
+      <p class="text-lg sm:text-xl mb-8 sm:mb-10 max-w-2xl mx-auto opacity-90">
         [PORTFOLIO_CTA_DESCRIPTION]
       </p>
       <a
         href="/contact"
-        class="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+        class="px-6 sm:px-8 py-3 sm:py-4 bg-white text-accent rounded-full
+               hover:bg-opacity-90 transition-all font-medium press-effect inline-block"
       >
         Start Your Project
       </a>

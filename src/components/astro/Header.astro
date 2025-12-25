@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from '@components/react/ThemeToggle';
+import MobileMenu from '@components/react/MobileMenu';
 
 const navLinks = [
   { href: '/about', label: 'About' },
@@ -10,41 +11,60 @@ const navLinks = [
 const currentPath = Astro.url.pathname;
 ---
 
-<header class="fixed top-0 z-50 w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
-  <div class="container mx-auto px-6">
-    <div class="flex items-center justify-between h-20">
-      <!-- Logo -->
-      <a href="/" class="text-xl font-bold text-gray-900 dark:text-white">
-        Refine & Deploy
-      </a>
+<header class="fixed top-0 z-50 w-full">
+  <!-- Glassmorphism Background -->
+  <div class="glass border-b border-theme">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 lg:h-20">
 
-      <!-- Desktop Navigation -->
-      <nav class="hidden md:flex items-center gap-10">
-        {navLinks.map((link) => (
-          <a
-            href={link.href}
-            class={`text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors ${
-              currentPath === link.href ? 'text-gray-900 dark:text-white font-medium' : ''
-            }`}
-          >
-            {link.label}
-          </a>
-        ))}
+        <!-- Logo -->
         <a
-          href="/contact"
-          class="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors font-medium"
+          href="/"
+          class="text-lg sm:text-xl font-semibold tracking-tight text-primary
+                 hover:text-accent transition-colors"
         >
-          Contact Us
+          Refine & Deploy
         </a>
-        <ThemeToggle client:load />
-      </nav>
 
-      <!-- Mobile Menu Button -->
-      <button class="md:hidden text-gray-900 dark:text-white p-2">
-        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+        <!-- Desktop Navigation -->
+        <nav class="hidden lg:flex items-center gap-1">
+          {navLinks.map((link) => (
+            <a
+              href={link.href}
+              class={`px-4 py-2 rounded-full text-sm font-medium transition-colors
+                ${currentPath === link.href
+                  ? 'text-primary bg-tertiary'
+                  : 'text-secondary hover:text-primary hover:bg-tertiary'
+                }`}
+            >
+              {link.label}
+            </a>
+          ))}
+
+          <!-- Separator -->
+          <div class="w-px h-6 mx-3 bg-theme" aria-hidden="true" />
+
+          <!-- CTA Button -->
+          <a
+            href="/contact"
+            class="btn-primary"
+          >
+            Get Started
+          </a>
+
+          <!-- Theme Toggle - Desktop -->
+          <div class="ml-3">
+            <ThemeToggle client:load />
+          </div>
+        </nav>
+
+        <!-- Mobile: Theme Toggle + Hamburger -->
+        <div class="flex items-center gap-2 lg:hidden">
+          <ThemeToggle client:load variant="compact" />
+          <MobileMenu client:load navLinks={navLinks} />
+        </div>
+
+      </div>
     </div>
   </div>
 </header>
