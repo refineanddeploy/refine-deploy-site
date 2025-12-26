@@ -95,16 +95,11 @@ export default function ThemeToggle({ variant = "default" }: Props) {
       document.documentElement.setAttribute("data-theme", newTheme);
       localStorage.setItem("theme", newTheme);
       document.body.classList.add("theme-ready");
-      // Update status bar color - remove and re-add for iOS compatibility
-      const oldMeta = document.querySelector('meta[name="theme-color"]');
-      if (oldMeta) {
-        oldMeta.remove();
+      // Update status bar color
+      const metaTheme = document.getElementById("theme-color-meta") as HTMLMetaElement;
+      if (metaTheme) {
+        metaTheme.content = newTheme === "dark" ? "#111827" : "#fafafa";
       }
-      const newMeta = document.createElement('meta');
-      newMeta.name = 'theme-color';
-      newMeta.id = 'theme-color-meta';
-      newMeta.content = newTheme === "dark" ? "#111827" : "#fafafa";
-      document.head.appendChild(newMeta);
       return newTheme;
     });
   }, []);

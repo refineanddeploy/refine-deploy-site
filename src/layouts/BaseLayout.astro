@@ -24,6 +24,11 @@ const siteTitle = `${title} | Refine & Deploy`;
     <meta name="description" content={description} />
     <title>{siteTitle}</title>
 
+    <!-- Theme color meta tags for iOS status bar - one for each mode -->
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fafafa" id="theme-color-meta" />
+
     <!-- Blocking theme script - prevents flash of wrong theme and sets status bar color -->
     <script is:inline>
       (function() {
@@ -32,13 +37,11 @@ const siteTitle = `${title} | Refine & Deploy`;
         const theme = stored || (prefersDark ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
 
-        // Create theme-color meta tag dynamically BEFORE page renders
-        // This ensures iOS Safari picks up the correct color
-        const metaTheme = document.createElement('meta');
-        metaTheme.name = 'theme-color';
-        metaTheme.id = 'theme-color-meta';
-        metaTheme.content = theme === 'dark' ? '#111827' : '#fafafa';
-        document.head.appendChild(metaTheme);
+        // Update theme-color meta tag
+        const metaTheme = document.getElementById('theme-color-meta');
+        if (metaTheme) {
+          metaTheme.content = theme === 'dark' ? '#111827' : '#fafafa';
+        }
       })();
     </script>
   </head>
