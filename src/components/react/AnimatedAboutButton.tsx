@@ -83,110 +83,89 @@ export default function AnimatedAboutButton() {
     };
   }, [initAudio, audioUnlocked]);
 
-  // Soft footstep - gentle thud
+  // Mario-style step - small boing
   const playStep = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Very soft thump
-    const bufSize = ctx.sampleRate * 0.06;
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < bufSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.15));
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    const lp = ctx.createBiquadFilter();
-    lp.type = "lowpass";
-    lp.frequency.value = 150;
+    const osc = ctx.createOscillator();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.06);
+
     const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.setValueAtTime(0.15, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-    src.connect(lp).connect(gain).connect(ctx.destination);
-    src.start(now);
+
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.1);
   }, [initAudio]);
 
-  // Soft scrape sound
+  // Mario-style dig - brick break
   const playDig = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
 
-    const bufSize = ctx.sampleRate * 0.25;
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < bufSize; i++) {
-      const env = Math.exp(-i / (bufSize * 0.4));
-      data[i] = (Math.random() * 2 - 1) * env * 0.15;
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    const bp = ctx.createBiquadFilter();
-    bp.type = "bandpass";
-    bp.frequency.value = 200;
-    bp.Q.value = 0.5;
+    // Quick descending blip
+    const osc = ctx.createOscillator();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-    src.connect(bp).connect(gain).connect(ctx.destination);
-    src.start(now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.15);
   }, [initAudio]);
 
-  // Gentle rising hum
+  // Mario-style lift - power up sound
   const playLift = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Soft pad-like tone
-    const osc = ctx.createOscillator();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(80, now);
-    osc.frequency.linearRampToValueAtTime(120, now + 0.4);
+    // Ascending arpeggio like Mario power-up
+    const notes = [196, 247, 294, 370, 440]; // G3, B3, D4, F#4, A4
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = "square";
+      osc.frequency.value = freq;
 
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.08, now + 0.1);
-    gain.gain.linearRampToValueAtTime(0.05, now + 0.3);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      const gain = ctx.createGain();
+      const startTime = now + i * 0.06;
+      gain.gain.setValueAtTime(0.12, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.1);
 
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.5);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.12);
+    });
   }, [initAudio]);
 
-  // Soft shimmer - no chimes
+  // Mario-style celebrate - coin sound
   const playCelebrate = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Gentle sparkle using filtered noise
-    const bufSize = ctx.sampleRate * 0.8;
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < bufSize; i++) {
-      const t = i / bufSize;
-      // Shimmering envelope
-      const env = Math.sin(t * Math.PI) * (1 + 0.3 * Math.sin(t * 40));
-      data[i] = (Math.random() * 2 - 1) * env * 0.08;
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
+    // Classic coin sound - B5 then E6
+    const notes = [988, 1319]; // B5, E6
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = "square";
+      osc.frequency.value = freq;
 
-    const hp = ctx.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.value = 2000;
+      const gain = ctx.createGain();
+      const startTime = now + i * 0.1;
+      gain.gain.setValueAtTime(0.15, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
 
-    const lp = ctx.createBiquadFilter();
-    lp.type = "lowpass";
-    lp.frequency.value = 6000;
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.15, now);
-    gain.gain.linearRampToValueAtTime(0.1, now + 0.4);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
-
-    src.connect(hp).connect(lp).connect(gain).connect(ctx.destination);
-    src.start(now);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.2);
+    });
   }, [initAudio]);
 
   useEffect(() => {
