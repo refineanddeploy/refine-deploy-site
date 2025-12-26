@@ -160,7 +160,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
           className="absolute inset-0 rounded-full overflow-hidden"
           animate={{
             background: isLight
-              ? "linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%)"
+              ? "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 50%, #5eead4 100%)"
               : "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)",
           }}
           transition={{ duration: 0.4 }}
@@ -231,7 +231,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
             className={isCompact ? "w-3 h-3" : "w-3.5 h-3.5"}
             animate={{
               opacity: isLight ? 0.6 : 0,
-              color: "#92400e",
+              color: "#0f766e",
             }}
             transition={{ duration: 0.3 }}
           >
@@ -251,7 +251,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
           animate={{
             x: isLight ? padding : padding + knobTravel,
             background: isLight
-              ? "linear-gradient(145deg, #ffffff 0%, #fefce8 100%)"
+              ? "linear-gradient(145deg, #ffffff 0%, #f0fdfa 100%)"
               : "linear-gradient(145deg, #e0e7ff 0%, #c7d2fe 100%)",
           }}
           transition={{
@@ -268,7 +268,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#f59e0b"
+                stroke="#14b8a6"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
