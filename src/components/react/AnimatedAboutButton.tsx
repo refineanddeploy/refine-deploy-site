@@ -73,7 +73,7 @@ export default function AnimatedAboutButton() {
     }
 
     const audio = new Audio('/sounds/animation.mp3');
-    audio.volume = 0.7;
+    audio.volume = 0.4;
     fireAudioRef.current = audio;
     audio.play().catch(() => {});
   }, []);
@@ -399,17 +399,17 @@ export default function AnimatedAboutButton() {
                 transition={{ duration: 0.5 }}
                 style={{ width: 50, height: 55 }}
               >
-                {/* Large ambient light - teal glow (bigger & brighter in dark mode) */}
+                {/* Large ambient light - teal glow (same size, brighter in dark mode) */}
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
                   style={{
-                    width: isDark ? 280 : 200,
-                    height: isDark ? 280 : 200,
-                    bottom: isDark ? -80 : -60,
+                    width: 280,
+                    height: 280,
+                    bottom: -80,
                     background: isDark
                       ? "radial-gradient(ellipse, rgba(45,212,191,0.5) 0%, rgba(20,184,166,0.25) 25%, rgba(13,148,136,0.1) 50%, transparent 70%)"
                       : "radial-gradient(ellipse, rgba(45,212,191,0.3) 0%, rgba(20,184,166,0.12) 30%, rgba(13,148,136,0.04) 50%, transparent 70%)",
-                    filter: isDark ? "blur(25px)" : "blur(20px)",
+                    filter: "blur(25px)",
                   }}
                   animate={{
                     opacity: isDark ? [0.85, 1, 0.9, 1, 0.85] : [0.7, 1, 0.8, 0.95, 0.7],
@@ -418,17 +418,17 @@ export default function AnimatedAboutButton() {
                   transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                 />
 
-                {/* Core bright teal glow (brighter in dark mode) */}
+                {/* Core bright teal glow (same size, brighter in dark mode) */}
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 rounded-full"
                   style={{
-                    width: isDark ? 80 : 60,
-                    height: isDark ? 55 : 40,
-                    bottom: isDark ? -8 : -5,
+                    width: 80,
+                    height: 55,
+                    bottom: -8,
                     background: isDark
                       ? "radial-gradient(ellipse, rgba(94,234,212,0.9) 0%, rgba(45,212,191,0.6) 40%, transparent 70%)"
                       : "radial-gradient(ellipse, rgba(94,234,212,0.7) 0%, rgba(45,212,191,0.4) 40%, transparent 70%)",
-                    filter: isDark ? "blur(10px)" : "blur(8px)",
+                    filter: "blur(10px)",
                   }}
                   animate={{
                     opacity: isDark ? [0.9, 1, 0.92, 1, 0.9] : [0.8, 1, 0.85, 0.95, 0.8],

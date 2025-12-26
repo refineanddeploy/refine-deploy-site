@@ -19,14 +19,30 @@ export default function InteractivePhone({ projects }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [loadedProjects, setLoadedProjects] = useState<Set<number>>(new Set());
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const currentProject = projects[activeProject];
 
+  // Mark project as loaded
+  const handleProjectLoaded = (index: number) => {
+    setLoadedProjects(prev => new Set(prev).add(index));
+    if (index === activeProject) {
+      setIsLoading(false);
+      setHasError(false);
+    }
+  };
+
   const handleProjectChange = (index: number) => {
     if (index !== activeProject) {
-      setIsLoading(true);
-      setHasError(false);
+      // If already loaded, show immediately
+      if (loadedProjects.has(index)) {
+        setIsLoading(false);
+        setHasError(false);
+      } else {
+        setIsLoading(true);
+        setHasError(false);
+      }
       setActiveProject(index);
     }
   };
@@ -167,24 +183,30 @@ export default function InteractivePhone({ projects }: Props) {
               </div>
             )}
 
-            {/* Website iframe */}
-            <iframe
-              ref={iframeRef}
-              src={currentProject.url}
-              className="w-full h-full border-0"
-              style={{ background: "#fff" }}
-              title={currentProject.title}
-              onLoad={() => {
-                setIsLoading(false);
-                setHasError(false);
-              }}
-              onError={() => {
-                setIsLoading(false);
-                setHasError(true);
-              }}
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              loading="lazy"
-            />
+            {/* Preload ALL project iframes - hidden until active */}
+            {projects.map((project, index) => (
+              <iframe
+                key={project.url}
+                ref={index === activeProject ? iframeRef : undefined}
+                src={project.url}
+                className="w-full h-full border-0 absolute inset-0"
+                style={{
+                  background: "#fff",
+                  visibility: index === activeProject ? "visible" : "hidden",
+                  zIndex: index === activeProject ? 1 : 0,
+                }}
+                title={project.title}
+                onLoad={() => handleProjectLoaded(index)}
+                onError={() => {
+                  if (index === activeProject) {
+                    setIsLoading(false);
+                    setHasError(true);
+                  }
+                }}
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                loading="eager"
+              />
+            ))}
           </div>
 
           {/* Home Indicator */}
