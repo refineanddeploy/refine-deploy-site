@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, useAnimation, useMotionValue, useTransform } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 
 interface Props {
   variant?: "default" | "compact";
@@ -10,11 +10,9 @@ interface Props {
 export default function ThemeToggle({ variant = "default" }: Props) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
-  const [isPulling, setIsPulling] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioUnlockedRef = useRef(false);
   const stringControls = useAnimation();
-  const pullY = useMotionValue(0);
 
   useEffect(() => {
     setMounted(true);
@@ -33,14 +31,13 @@ export default function ThemeToggle({ variant = "default" }: Props) {
     audioUnlockedRef.current = true;
   }, []);
 
-  // Play realistic light switch click sound - DOUBLED VOLUME
+  // Play realistic light switch click sound - LOUD
   const playClickSound = useCallback(() => {
     if (!audioContextRef.current || !audioUnlockedRef.current) return;
 
     const ctx = audioContextRef.current;
     const now = ctx.currentTime;
 
-    // Create noise buffer for realistic mechanical click
     const bufferSize = ctx.sampleRate * 0.03;
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -62,7 +59,6 @@ export default function ThemeToggle({ variant = "default" }: Props) {
     highpass.type = "highpass";
     highpass.frequency.value = 800;
 
-    // DOUBLED: 0.4 -> 0.8
     const mainGain = ctx.createGain();
     mainGain.gain.setValueAtTime(0.8, now);
     mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
@@ -72,7 +68,6 @@ export default function ThemeToggle({ variant = "default" }: Props) {
     highpass.connect(mainGain);
     mainGain.connect(ctx.destination);
 
-    // DOUBLED: 0.15 -> 0.3
     const thunk = ctx.createOscillator();
     const thunkGain = ctx.createGain();
     thunk.type = "sine";
@@ -89,45 +84,37 @@ export default function ThemeToggle({ variant = "default" }: Props) {
     thunk.stop(now + 0.025);
   }, []);
 
+  // Actually toggle the theme
+  const doToggle = useCallback(() => {
+    setTheme(prev => {
+      const newTheme = prev === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+      document.body.classList.add("theme-ready");
+      return newTheme;
+    });
+  }, []);
+
   const toggleTheme = useCallback(() => {
     initAudio();
     playClickSound();
+    doToggle();
+  }, [initAudio, playClickSound, doToggle]);
 
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.body.classList.add("theme-ready");
-  }, [theme, initAudio, playClickSound]);
-
-  // Handle pull string interaction
-  const handlePullStart = () => {
-    setIsPulling(true);
-  };
-
-  const handlePullEnd = () => {
-    if (isPulling) {
-      setIsPulling(false);
-      // Animate the pull and release
-      stringControls.start({
-        y: [0, 20, -5, 0],
-        transition: { duration: 0.4, times: [0, 0.3, 0.7, 1] }
-      });
-      toggleTheme();
-    }
-  };
-
-  const handlePullClick = () => {
+  // Handle pull string click
+  const handlePullClick = useCallback(() => {
+    initAudio();
     stringControls.start({
-      y: [0, 18, -4, 0],
-      transition: { duration: 0.35, times: [0, 0.35, 0.7, 1] }
+      y: [0, 24, -6, 0],
+      transition: { duration: 0.4, times: [0, 0.35, 0.7, 1] }
     });
-    toggleTheme();
-  };
+    playClickSound();
+    doToggle();
+  }, [initAudio, playClickSound, doToggle, stringControls]);
 
   if (!mounted) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-center">
         <div
           className={`${variant === "compact" ? "w-14 h-7" : "w-16 h-8"} rounded-full bg-tertiary`}
           aria-hidden="true"
@@ -146,12 +133,12 @@ export default function ThemeToggle({ variant = "default" }: Props) {
   const padding = (trackHeight - knobSize) / 2;
   const knobTravel = trackWidth - knobSize - padding * 2;
 
-  // String sizes
-  const stringLength = isCompact ? 28 : 36;
-  const ballSize = isCompact ? 12 : 14;
+  // String sizes - hanging from bottom center
+  const stringLength = isCompact ? 32 : 44;
+  const ballSize = isCompact ? 14 : 18;
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-col items-center">
       {/* Toggle Switch */}
       <motion.button
         onClick={toggleTheme}
@@ -311,31 +298,29 @@ export default function ThemeToggle({ variant = "default" }: Props) {
         </motion.div>
       </motion.button>
 
-      {/* Pull String */}
+      {/* Pull String - Hanging from bottom center */}
       <motion.div
         className="relative cursor-pointer select-none"
-        style={{ height: stringLength + ballSize + 4 }}
+        style={{
+          width: ballSize + 8,
+          height: stringLength + ballSize,
+          marginTop: -2,
+        }}
         onClick={handlePullClick}
-        onMouseDown={handlePullStart}
-        onMouseUp={handlePullEnd}
-        onMouseLeave={() => isPulling && handlePullEnd()}
-        onTouchStart={handlePullStart}
-        onTouchEnd={handlePullEnd}
         animate={stringControls}
         whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
         aria-label="Pull to toggle theme"
         role="button"
       >
         {/* String/cord */}
-        <motion.div
+        <div
           className="absolute left-1/2 -translate-x-1/2 top-0"
           style={{
             width: 2,
             height: stringLength,
             background: isLight
-              ? "linear-gradient(180deg, #a8a29e 0%, #78716c 100%)"
-              : "linear-gradient(180deg, #71717a 0%, #52525b 100%)",
+              ? "linear-gradient(180deg, #78716c 0%, #57534e 50%, #44403c 100%)"
+              : "linear-gradient(180deg, #52525b 0%, #3f3f46 50%, #27272a 100%)",
             borderRadius: 1,
           }}
         />
@@ -349,22 +334,24 @@ export default function ThemeToggle({ variant = "default" }: Props) {
             height: ballSize,
             borderRadius: "50%",
             background: isLight
-              ? "radial-gradient(circle at 30% 30%, #fafafa 0%, #d4d4d4 40%, #a1a1aa 70%, #71717a 100%)"
-              : "radial-gradient(circle at 30% 30%, #e4e4e7 0%, #a1a1aa 40%, #71717a 70%, #52525b 100%)",
+              ? "radial-gradient(circle at 30% 25%, #ffffff 0%, #e5e5e5 25%, #a3a3a3 60%, #737373 85%, #525252 100%)"
+              : "radial-gradient(circle at 30% 25%, #d4d4d8 0%, #a1a1aa 25%, #71717a 60%, #52525b 85%, #3f3f46 100%)",
             boxShadow: isLight
-              ? "0 2px 4px rgba(0,0,0,0.2), inset 0 -2px 4px rgba(0,0,0,0.1), inset 0 2px 2px rgba(255,255,255,0.8)"
-              : "0 2px 4px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.2), inset 0 2px 2px rgba(255,255,255,0.3)",
+              ? "0 3px 6px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.9)"
+              : "0 3px 6px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2)",
           }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95, y: 8 }}
         >
-          {/* Highlight on ball */}
+          {/* Highlight reflection */}
           <div
             className="absolute rounded-full"
             style={{
-              top: "15%",
-              left: "20%",
-              width: "30%",
-              height: "25%",
-              background: "rgba(255,255,255,0.6)",
+              top: "12%",
+              left: "18%",
+              width: "35%",
+              height: "30%",
+              background: "rgba(255,255,255,0.7)",
               filter: "blur(1px)",
             }}
           />
