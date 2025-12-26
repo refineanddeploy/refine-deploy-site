@@ -12,8 +12,10 @@ const currentPath = Astro.url.pathname;
 ---
 
 <header class="fixed top-0 z-50 w-full">
+  <!-- Teal status bar strip -->
+  <div class="h-1 w-full bg-accent"></div>
   <!-- Header Background - themed glass effect -->
-  <div class="border-b border-theme" style="background: red !important;">
+  <div class="header-glass border-b border-theme">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 lg:h-20">
 

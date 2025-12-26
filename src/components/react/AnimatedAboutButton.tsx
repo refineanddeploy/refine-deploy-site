@@ -85,7 +85,9 @@ export default function AnimatedAboutButton() {
     stopSound();
     globalAudioPlaying = true;
     const audio = new Audio('/sounds/animation.mp3');
-    audio.volume = 0.5;
+    // Lower volume on mobile devices
+    const isMobile = window.innerWidth < 768;
+    audio.volume = isMobile ? 0.25 : 0.5;
     globalAudio = audio;
     audio.onended = () => { globalAudioPlaying = false; };
     audio.play().catch(() => { globalAudioPlaying = false; });
