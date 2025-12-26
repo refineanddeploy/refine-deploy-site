@@ -93,7 +93,7 @@ export default function MobileMenu({ navLinks }: Props) {
 
             {/* Slide-in Panel */}
             <motion.nav
-              className={`fixed top-0 right-0 h-full w-[85vw] max-w-sm z-[58] shadow-2xl ${isDark ? 'bg-gray-900' : 'bg-white'}`}
+              className="fixed top-0 right-0 h-full w-[85vw] max-w-sm z-[58] shadow-2xl mobile-menu-panel"
               style={{
                 borderLeft: "1px solid rgba(var(--color-border), 0.2)",
               }}
@@ -106,7 +106,7 @@ export default function MobileMenu({ navLinks }: Props) {
                 stiffness: 300,
               }}
             >
-              <div className={`flex flex-col h-full pt-24 pb-8 px-8 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+              <div className="flex flex-col h-full pt-24 pb-8 px-8 mobile-menu-panel">
                 {/* Navigation Links */}
                 <div className="flex flex-col gap-2">
                   {navLinks.map((link, index) => (

@@ -262,6 +262,17 @@
     display: none;
   }
 
+  /* Mobile menu solid background */
+  .mobile-menu-panel {
+    background-color: #ffffff !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  [data-theme="dark"] .mobile-menu-panel {
+    background-color: #111827 !important;
+  }
+
   /* Container utilities */
   .container-narrow {
     max-width: 48rem;
