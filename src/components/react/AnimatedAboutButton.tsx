@@ -3,71 +3,75 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, useAnimation } from "framer-motion";
 
-// Soft footstep sound using Web Audio API
-const createFootstepSound = (audioContext: AudioContext, isLeft: boolean) => {
+// Realistic footstep sound
+const createFootstepSound = (audioContext: AudioContext) => {
+  // Create nodes
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
   const filter = audioContext.createBiquadFilter();
 
+  // Connect
   oscillator.connect(filter);
   filter.connect(gainNode);
   gainNode.connect(audioContext.destination);
 
-  // Soft thud sound
-  oscillator.frequency.value = isLeft ? 65 : 75;
+  // Footstep thud - low frequency
+  oscillator.frequency.value = 60 + Math.random() * 30;
   oscillator.type = "sine";
 
   filter.type = "lowpass";
-  filter.frequency.value = 200;
+  filter.frequency.value = 150;
 
-  gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
+  // Quick attack, fast decay for a "step" sound
+  const now = audioContext.currentTime;
+  gainNode.gain.setValueAtTime(0, now);
+  gainNode.gain.linearRampToValueAtTime(0.15, now + 0.02);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
-  oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + 0.08);
+  oscillator.start(now);
+  oscillator.stop(now + 0.12);
 };
 
 export default function AnimatedAboutButton() {
   const [hasAnimated, setHasAnimated] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isWalking, setIsWalking] = useState(false);
+  const [leftLegForward, setLeftLegForward] = useState(true);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const footstepIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const walkIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const controls = useAnimation();
 
-  const playFootsteps = useCallback(() => {
+  const playFootstep = useCallback(() => {
     try {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
-
-      let stepCount = 0;
-      const maxSteps = 10;
-      let isLeft = true;
-
-      footstepIntervalRef.current = setInterval(() => {
-        if (stepCount < maxSteps && audioContextRef.current) {
-          createFootstepSound(audioContextRef.current, isLeft);
-          isLeft = !isLeft;
-          stepCount++;
-        } else {
-          if (footstepIntervalRef.current) {
-            clearInterval(footstepIntervalRef.current);
-          }
-        }
-      }, 220);
+      createFootstepSound(audioContextRef.current);
     } catch {
       // Audio not supported
     }
   }, []);
 
-  const stopFootsteps = useCallback(() => {
-    if (footstepIntervalRef.current) {
-      clearInterval(footstepIntervalRef.current);
+  const startWalking = useCallback(() => {
+    setIsWalking(true);
+
+    // Alternate legs and play footsteps
+    walkIntervalRef.current = setInterval(() => {
+      setLeftLegForward(prev => !prev);
+      playFootstep();
+    }, 350); // Step every 350ms for a slow walk
+  }, [playFootstep]);
+
+  const stopWalking = useCallback(() => {
+    setIsWalking(false);
+    if (walkIntervalRef.current) {
+      clearInterval(walkIntervalRef.current);
+      walkIntervalRef.current = null;
     }
   }, []);
 
   useEffect(() => {
-    const hasPlayed = sessionStorage.getItem("aboutAnimated");
+    const hasPlayed = sessionStorage.getItem("aboutWalkAnimated");
 
     if (hasPlayed) {
       setHasAnimated(true);
@@ -75,33 +79,33 @@ export default function AnimatedAboutButton() {
       return;
     }
 
+    // Start after a brief delay
     const timer = setTimeout(() => {
       setIsVisible(true);
-      startAnimation();
-    }, 1000);
+      runWalkAnimation();
+    }, 800);
 
     return () => {
       clearTimeout(timer);
-      stopFootsteps();
+      stopWalking();
     };
   }, []);
 
-  const startAnimation = async () => {
-    playFootsteps();
+  const runWalkAnimation = async () => {
+    startWalking();
 
+    // Walk slowly across - takes about 4 seconds
     await controls.start({
       x: 0,
       transition: {
-        type: "spring",
-        stiffness: 35,
-        damping: 14,
-        mass: 1,
+        duration: 4,
+        ease: "linear",
       },
     });
 
-    stopFootsteps();
+    stopWalking();
     setHasAnimated(true);
-    sessionStorage.setItem("aboutAnimated", "true");
+    sessionStorage.setItem("aboutWalkAnimated", "true");
   };
 
   if (!isVisible) return null;
@@ -111,91 +115,135 @@ export default function AnimatedAboutButton() {
       className="relative inline-flex items-end"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.3 }}
     >
-      {/* Main animated container */}
+      {/* Walking group - starts from far right */}
       <motion.div
         className="relative flex items-end"
-        initial={{ x: hasAnimated ? 0 : 200 }}
+        initial={{ x: hasAnimated ? 0 : "calc(100vw - 100%)" }}
         animate={controls}
       >
-        {/* Left Person - Minimal elegant style */}
-        <motion.div
-          className="relative z-10"
-          animate={hasAnimated ? {} : { y: [0, -2, 0] }}
-          transition={{
-            duration: 0.22,
-            repeat: hasAnimated ? 0 : 10,
-            ease: "easeInOut",
-          }}
-        >
+        {/* Left Person */}
+        <motion.div className="relative z-10">
           <svg
-            viewBox="0 0 32 64"
+            viewBox="0 0 40 80"
             fill="none"
-            className="w-6 h-12 sm:w-8 sm:h-16 lg:w-10 lg:h-20"
+            className="w-8 h-16 sm:w-10 sm:h-20 lg:w-12 lg:h-24"
           >
             {/* Head */}
-            <circle cx="16" cy="8" r="6" fill="#FDBF9C" />
+            <circle cx="20" cy="10" r="7" fill="#FDBF9C" />
             {/* Hair */}
             <path
-              d="M10 6.5C10 3.5 12.5 1 16 1C19.5 1 22 3.5 22 6.5C22 5 19.5 3.5 16 3.5C12.5 3.5 10 5 10 6.5Z"
+              d="M13 8C13 4 16 1 20 1C24 1 27 4 27 8C27 6 24 4 20 4C16 4 13 6 13 8Z"
               fill="#3D2314"
             />
-            {/* Neck */}
-            <rect x="14" y="13" width="4" height="3" fill="#FDBF9C" />
             {/* Body */}
             <path
-              d="M8 18C8 16 11 14 16 14C21 14 24 16 24 18L25 42H7L8 18Z"
+              d="M10 20C10 17 14 15 20 15C26 15 30 17 30 20L31 48H9L10 20Z"
               style={{ fill: "rgb(var(--color-accent))" }}
             />
-            {/* Arm reaching up */}
+            {/* Left arm up holding button */}
             <path
-              d="M7 20L3 12L6 11L10 19Z"
+              d="M9 22L4 12L7 10L12 20Z"
               style={{ fill: "rgb(var(--color-accent))" }}
             />
             {/* Hand */}
-            <circle cx="4" cy="10" r="3" fill="#FDBF9C" />
-            {/* Pants */}
-            <path d="M7 42L5 62H12L14 42H18L20 62H27L25 42H7Z" fill="#2D3748" />
+            <circle cx="5" cy="10" r="3.5" fill="#FDBF9C" />
+
+            {/* Legs - Animated walking */}
+            <motion.g
+              animate={isWalking ? {
+                d: leftLegForward
+                  ? "M9 48L4 75H14L16 48Z M24 48L29 75H19L17 48Z"
+                  : "M9 48L14 75H4L6 48Z M24 48L19 75H29L27 48Z"
+              } : {}}
+            >
+              {/* Left leg */}
+              <motion.path
+                d={leftLegForward ? "M9 48L4 75H14L16 48Z" : "M9 48L14 75H4L6 48Z"}
+                fill="#2D3748"
+                animate={isWalking ? {
+                  d: leftLegForward
+                    ? "M9 48L4 75H14L16 48Z"
+                    : "M9 48L14 75H4L6 48Z"
+                } : {}}
+                transition={{ duration: 0.35, ease: "easeInOut" }}
+              />
+              {/* Right leg */}
+              <motion.path
+                d={leftLegForward ? "M24 48L29 75H19L17 48Z" : "M24 48L19 75H29L27 48Z"}
+                fill="#2D3748"
+                animate={isWalking ? {
+                  d: leftLegForward
+                    ? "M24 48L29 75H19L17 48Z"
+                    : "M24 48L19 75H29L27 48Z"
+                } : {}}
+                transition={{ duration: 0.35, ease: "easeInOut" }}
+              />
+            </motion.g>
+
             {/* Shoes */}
-            <ellipse cx="8.5" cy="63" rx="4" ry="1.5" fill="#1A202C" />
-            <ellipse cx="23.5" cy="63" rx="4" ry="1.5" fill="#1A202C" />
+            <motion.ellipse
+              cx={leftLegForward ? "9" : "9"}
+              cy="77"
+              rx="5"
+              ry="2"
+              fill="#1A202C"
+              animate={isWalking ? { cx: leftLegForward ? 6 : 12 } : { cx: 9 }}
+              transition={{ duration: 0.35 }}
+            />
+            <motion.ellipse
+              cx={leftLegForward ? "24" : "24"}
+              cy="77"
+              rx="5"
+              ry="2"
+              fill="#1A202C"
+              animate={isWalking ? { cx: leftLegForward ? 27 : 21 } : { cx: 24 }}
+              transition={{ duration: 0.35 }}
+            />
           </svg>
+
+          {/* Body bounce while walking */}
+          <motion.div
+            className="absolute inset-0"
+            animate={isWalking ? { y: [0, -2, 0] } : { y: 0 }}
+            transition={{ duration: 0.35, repeat: isWalking ? Infinity : 0 }}
+          />
         </motion.div>
 
-        {/* The Button */}
+        {/* The Button being carried */}
         <motion.a
           href="/about"
-          className="relative z-20 -mx-1"
-          style={{ marginTop: "-24px" }}
-          animate={hasAnimated ? { rotate: -6 } : {
-            y: [0, -1.5, 0],
-            rotate: [-6, -4, -6, -8, -6],
-          }}
+          className="relative z-20 -mx-2"
+          style={{ marginTop: "-32px" }}
+          animate={isWalking
+            ? { y: [0, -3, 0], rotate: [-8, -5, -8] }
+            : { y: 0, rotate: -8 }
+          }
           transition={{
-            duration: 0.22,
-            repeat: hasAnimated ? 0 : 10,
-            ease: "easeInOut",
+            duration: 0.35,
+            repeat: isWalking ? Infinity : 0,
+            ease: "easeInOut"
           }}
           whileHover={{
-            scale: 1.06,
+            scale: 1.08,
             rotate: 0,
-            y: -4,
+            y: -6,
             transition: { duration: 0.2 }
           }}
-          whileTap={{ scale: 0.98 }}
+          whileTap={{ scale: 0.95 }}
         >
           <div
-            className="px-3 py-2 sm:px-5 sm:py-2.5 lg:px-6 lg:py-3 rounded-full
-                       font-semibold text-[10px] sm:text-xs lg:text-sm
+            className="px-4 py-2.5 sm:px-6 sm:py-3 lg:px-7 lg:py-3.5 rounded-full
+                       font-semibold text-xs sm:text-sm lg:text-base
                        whitespace-nowrap cursor-pointer
                        border border-white/20"
             style={{
               background: "rgb(var(--color-accent))",
               color: "#ffffff",
               boxShadow: `
-                0 8px 32px -8px rgba(var(--color-accent), 0.5),
-                0 2px 8px rgba(0,0,0,0.1),
+                0 10px 40px -10px rgba(var(--color-accent), 0.5),
+                0 4px 12px rgba(0,0,0,0.15),
                 inset 0 1px 0 rgba(255,255,255,0.2)
               `,
             }}
@@ -204,69 +252,110 @@ export default function AnimatedAboutButton() {
           </div>
         </motion.a>
 
-        {/* Right Person - Minimal elegant style */}
-        <motion.div
-          className="relative z-10"
-          animate={hasAnimated ? {} : { y: [0, -2, 0] }}
-          transition={{
-            duration: 0.22,
-            repeat: hasAnimated ? 0 : 10,
-            ease: "easeInOut",
-            delay: 0.11,
-          }}
-        >
+        {/* Right Person */}
+        <motion.div className="relative z-10">
           <svg
-            viewBox="0 0 32 64"
+            viewBox="0 0 40 80"
             fill="none"
-            className="w-6 h-12 sm:w-8 sm:h-16 lg:w-10 lg:h-20"
+            className="w-8 h-16 sm:w-10 sm:h-20 lg:w-12 lg:h-24"
           >
             {/* Head */}
-            <circle cx="16" cy="8" r="5.5" fill="#E8C4A0" />
-            {/* Hair */}
+            <circle cx="20" cy="10" r="6.5" fill="#E8C4A0" />
+            {/* Hair - long */}
             <path
-              d="M10 7C10 3 13 0 16 0C19 0 22 3 22 7C22 5 20 4 16 4C12 4 10 5 10 7Z"
+              d="M13 8C13 3 16 0 20 0C24 0 27 3 27 8C27 6 24 5 20 5C16 5 13 6 13 8Z"
               fill="#1A1A1A"
             />
-            <ellipse cx="16" cy="2" rx="4" ry="2.5" fill="#1A1A1A" />
+            <ellipse cx="20" cy="3" rx="5" ry="3" fill="#1A1A1A" />
+            {/* Hair sides */}
+            <path d="M13 8C12 15 12 22 14 28L9 22L13 8Z" fill="#1A1A1A" />
+            <path d="M27 8C28 15 28 22 26 28L31 22L27 8Z" fill="#1A1A1A" />
             {/* Earrings */}
-            <circle cx="10" cy="9" r="1" fill="#F59E0B" />
-            <circle cx="22" cy="9" r="1" fill="#F59E0B" />
-            {/* Neck */}
-            <rect x="14" y="12" width="4" height="3" fill="#E8C4A0" />
+            <circle cx="13" cy="12" r="1.5" fill="#F59E0B" />
+            <circle cx="27" cy="12" r="1.5" fill="#F59E0B" />
             {/* Body - Blouse */}
             <path
-              d="M8 17C8 15 11 13 16 13C21 13 24 15 24 17L25 38H7L8 17Z"
+              d="M10 19C10 16 14 14 20 14C26 14 30 16 30 19L31 44H9L10 19Z"
               fill="#BE185D"
             />
-            {/* Arm reaching up */}
+            {/* Right arm up holding button */}
             <path
-              d="M25 19L29 11L26 10L22 18Z"
+              d="M31 21L36 11L33 9L28 19Z"
               fill="#BE185D"
             />
             {/* Hand */}
-            <circle cx="28" cy="9" r="2.5" fill="#E8C4A0" />
+            <circle cx="35" cy="9" r="3" fill="#E8C4A0" />
             {/* Skirt */}
-            <path d="M7 38L4 52H28L25 38H7Z" fill="#374151" />
+            <path d="M9 44L5 60H35L31 44H9Z" fill="#374151" />
+
             {/* Legs */}
-            <rect x="10" y="52" width="4" height="10" fill="#E8C4A0" />
-            <rect x="18" y="52" width="4" height="10" fill="#E8C4A0" />
+            <motion.path
+              d="M12 60L10 74H17L15 60Z"
+              fill="#E8C4A0"
+              animate={isWalking ? {
+                d: leftLegForward
+                  ? "M12 60L7 74H14L15 60Z"
+                  : "M12 60L17 74H10L11 60Z"
+              } : {}}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
+            />
+            <motion.path
+              d="M23 60L25 74H32L28 60Z"
+              fill="#E8C4A0"
+              animate={isWalking ? {
+                d: leftLegForward
+                  ? "M23 60L28 74H35L30 60Z"
+                  : "M23 60L18 74H25L24 60Z"
+              } : {}}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
+            />
+
             {/* Heels */}
-            <path d="M9 62L14 62L14 64L10 64L9 62Z" fill="#BE185D" />
-            <path d="M18 62L23 62L22 64L18 64L18 62Z" fill="#BE185D" />
+            <motion.path
+              d="M9 74L15 74L14 78L10 78Z"
+              fill="#BE185D"
+              animate={isWalking ? {
+                d: leftLegForward
+                  ? "M6 74L12 74L11 78L7 78Z"
+                  : "M15 74L21 74L20 78L16 78Z"
+              } : {}}
+              transition={{ duration: 0.35 }}
+            />
+            <motion.path
+              d="M24 74L30 74L29 78L25 78Z"
+              fill="#BE185D"
+              animate={isWalking ? {
+                d: leftLegForward
+                  ? "M27 74L33 74L32 78L28 78Z"
+                  : "M17 74L23 74L22 78L18 78Z"
+              } : {}}
+              transition={{ duration: 0.35 }}
+            />
           </svg>
+
+          {/* Body bounce while walking - offset from left person */}
+          <motion.div
+            className="absolute inset-0"
+            animate={isWalking ? { y: [0, -2, 0] } : { y: 0 }}
+            transition={{
+              duration: 0.35,
+              repeat: isWalking ? Infinity : 0,
+              delay: 0.175 // Offset for natural walking
+            }}
+          />
         </motion.div>
       </motion.div>
 
-      {/* Subtle shadow */}
+      {/* Shadow that follows */}
       <motion.div
-        className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-1 rounded-full"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-2 rounded-full pointer-events-none"
         style={{
-          width: "80%",
-          background: "rgba(var(--color-text-primary), 0.08)"
+          width: "90%",
+          background: "rgba(var(--color-text-primary), 0.1)"
         }}
-        initial={{ scaleX: hasAnimated ? 1 : 0.5, opacity: 0 }}
-        animate={{ scaleX: 1, opacity: 1 }}
-        transition={{ delay: hasAnimated ? 0 : 2, duration: 0.3 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: hasAnimated ? 1 : 0.6 }}
+        transition={{ delay: 0.5 }}
       />
     </motion.div>
   );
