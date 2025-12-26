@@ -65,18 +65,23 @@ export default function AnimatedAboutButton() {
     };
   }, [hasStarted]);
 
-  // Combined animation sound (footsteps + fire)
-  const playAnimationSound = useCallback(() => {
+  // Stop any playing audio
+  const stopSound = useCallback(() => {
     if (fireAudioRef.current) {
       fireAudioRef.current.pause();
+      fireAudioRef.current.currentTime = 0;
       fireAudioRef.current = null;
     }
+  }, []);
 
+  // Combined animation sound (footsteps + fire)
+  const playAnimationSound = useCallback(() => {
+    stopSound();
     const audio = new Audio('/sounds/animation.mp3');
-    audio.volume = 0.4;
+    audio.volume = 0.5;
     fireAudioRef.current = audio;
     audio.play().catch(() => {});
-  }, []);
+  }, [stopSound]);
 
   useEffect(() => {
     if (!hasStarted) return;
@@ -122,12 +127,17 @@ export default function AnimatedAboutButton() {
   }, [phase]);
 
   const replay = useCallback(() => {
+    // Stop current audio immediately
+    stopSound();
     if (audioRef.current) try { audioRef.current.close(); } catch {}
-    if (fireAudioRef.current) { fireAudioRef.current.pause(); fireAudioRef.current = null; }
-    audioRef.current = null; initAudio();
+    audioRef.current = null;
+    initAudio();
     soundsPlayed.current = { sound: false };
-    setPhase(null); setStepCount(0); setHoldFrame(0); setAnimKey(k => k + 1);
-  }, [initAudio]);
+    setPhase(null);
+    setStepCount(0);
+    setHoldFrame(0);
+    setAnimKey(k => k + 1);
+  }, [initAudio, stopSound]);
 
   if (!phase) return null;
 
