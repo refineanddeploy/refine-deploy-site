@@ -24,8 +24,11 @@ const siteTitle = `${title} | Refine & Deploy`;
     <meta name="description" content={description} />
     <title>{siteTitle}</title>
 
-    <!-- Theme color for iOS status bar - red test -->
+    <!-- Theme color for browsers -->
     <meta name="theme-color" content="#ff0000" />
+    <!-- Apple-specific status bar styling -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <!-- Blocking theme script - prevents flash of wrong theme -->
     <script is:inline>
