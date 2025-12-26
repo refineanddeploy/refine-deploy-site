@@ -92,7 +92,7 @@ export default function AnimatedAboutButton() {
 
     // Use Web Audio API for volume control (works on iOS)
     const isMobile = window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const targetVolume = isMobile ? 0.15 : 0.5;
+    const targetVolume = isMobile ? 0.17 : 0.5;
 
     try {
       // Create or reuse AudioContext
