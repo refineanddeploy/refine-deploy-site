@@ -31,12 +31,16 @@ export default function ThemeToggle({ variant = "default" }: Props) {
     audioUnlockedRef.current = true;
   }, []);
 
-  // Play realistic light switch click sound - LOUD
+  // Play realistic light switch click sound - louder on mobile
   const playClickSound = useCallback(() => {
     if (!audioContextRef.current || !audioUnlockedRef.current) return;
 
     const ctx = audioContextRef.current;
     const now = ctx.currentTime;
+
+    // Detect mobile for volume boost (1.5x louder on mobile)
+    const isMobile = window.innerWidth < 768;
+    const volumeMultiplier = isMobile ? 1.5 : 1;
 
     const bufferSize = ctx.sampleRate * 0.03;
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -60,7 +64,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
     highpass.frequency.value = 800;
 
     const mainGain = ctx.createGain();
-    mainGain.gain.setValueAtTime(0.8, now);
+    mainGain.gain.setValueAtTime(0.8 * volumeMultiplier, now);
     mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
 
     noiseSource.connect(bandpass);
@@ -73,7 +77,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
     thunk.type = "sine";
     thunk.frequency.setValueAtTime(150, now);
     thunk.frequency.exponentialRampToValueAtTime(80, now + 0.015);
-    thunkGain.gain.setValueAtTime(0.3, now);
+    thunkGain.gain.setValueAtTime(0.3 * volumeMultiplier, now);
     thunkGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
     thunk.connect(thunkGain);
     thunkGain.connect(ctx.destination);
