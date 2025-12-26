@@ -2,6 +2,7 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import HorizontalProjects from '@components/react/HorizontalProjects';
 import InteractivePhone from '@components/react/InteractivePhone';
+import AnimatedAboutButton from '@components/react/AnimatedAboutButton';
 
 // Project data for horizontal scroll
 const recentProjects = [
@@ -109,28 +110,43 @@ const services = [
           </div>
         </div>
 
-        <!-- Hero Visual - Simplified for mobile -->
+        <!-- Hero Visual -->
         <div class="relative order-1 lg:order-2 w-full">
-          <!-- Mobile: Single preview card -->
-          <div class="lg:hidden w-full max-w-sm mx-auto">
-            <div class="card shadow-elevated p-1">
-              <div class="aspect-[4/3] bg-tertiary rounded-xl flex items-center justify-center">
-                <div class="text-center p-6">
-                  <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-accent/10 flex items-center justify-center">
-                    <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+          <!-- Animated About Button - Positioned elegantly -->
+          <div class="absolute -top-4 right-0 sm:right-4 lg:top-0 lg:-right-4 xl:right-0 z-30">
+            <AnimatedAboutButton client:load />
+          </div>
+
+          <!-- Mobile: Preview cards with mockups -->
+          <div class="lg:hidden w-full max-w-md mx-auto pt-16 sm:pt-20">
+            <div class="relative">
+              <!-- Main card -->
+              <div class="card shadow-elevated p-1 transform -rotate-2">
+                <div class="aspect-[4/3] bg-tertiary rounded-xl overflow-hidden">
+                  <div class="h-full bg-gradient-to-br from-accent/10 to-accent/5 p-4 flex flex-col justify-between">
+                    <div class="flex gap-1">
+                      <div class="w-2 h-2 rounded-full bg-red-400/60"></div>
+                      <div class="w-2 h-2 rounded-full bg-yellow-400/60"></div>
+                      <div class="w-2 h-2 rounded-full bg-green-400/60"></div>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-sm text-secondary font-medium">Beautiful websites<br/>that convert</p>
+                    </div>
+                    <div></div>
                   </div>
-                  <p class="text-sm text-secondary">Beautiful websites that convert</p>
                 </div>
+              </div>
+              <!-- Secondary floating card -->
+              <div class="absolute -bottom-4 -left-4 w-24 card shadow-elevated p-1 transform rotate-6">
+                <div class="aspect-[9/16] bg-gradient-to-br from-accent/20 to-accent/5 rounded-lg"></div>
               </div>
             </div>
           </div>
 
           <!-- Desktop: Tilted mockups -->
-          <div class="hidden lg:block relative h-[400px]">
+          <div class="hidden lg:block relative h-[420px] mt-8">
             <!-- Main desktop mockup -->
-            <div class="absolute top-0 right-0 w-80 xl:w-96 card shadow-elevated transform rotate-3 hover:rotate-0 transition-transform duration-500 overflow-hidden">
+            <div class="absolute top-8 right-0 w-80 xl:w-96 card shadow-elevated transform rotate-3 hover:rotate-0 transition-transform duration-500 overflow-hidden">
               <div class="p-3 border-b border-subtle">
                 <div class="flex gap-1.5">
                   <div class="w-2.5 h-2.5 rounded-full bg-red-400"></div>
@@ -146,7 +162,7 @@ const services = [
             </div>
 
             <!-- Tablet mockup -->
-            <div class="absolute top-24 left-0 w-56 xl:w-64 card shadow-elevated transform -rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden">
+            <div class="absolute top-32 left-0 w-56 xl:w-64 card shadow-elevated transform -rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden">
               <div class="p-3">
                 <div class="h-36 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 p-4">
                   <div class="text-xs text-secondary">Acme Beauty</div>
@@ -155,7 +171,7 @@ const services = [
             </div>
 
             <!-- Phone mockup -->
-            <div class="absolute bottom-0 right-16 w-28 xl:w-32 card shadow-elevated transform rotate-12 hover:rotate-6 transition-transform duration-500 overflow-hidden rounded-2xl">
+            <div class="absolute bottom-0 right-20 w-28 xl:w-32 card shadow-elevated transform rotate-12 hover:rotate-6 transition-transform duration-500 overflow-hidden rounded-2xl">
               <div class="p-2">
                 <div class="h-44 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 p-3">
                   <div class="text-xs text-primary">Discover<br/>mindful hiking</div>
