@@ -144,30 +144,30 @@ export default function InteractivePhone({ projects }: Props) {
           <div className="absolute -inset-6 sm:-inset-10 rounded-[60px] blur-3xl opacity-25 pointer-events-none"
                style={{ background: "rgb(var(--color-accent))" }} />
 
+          {/* Fullscreen Backdrop - separate from phone */}
+          <AnimatePresence>
+            {isFullscreen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-40"
+                style={{ background: "rgba(0,0,0,0.95)" }}
+                onClick={() => setIsFullscreen(false)}
+              />
+            )}
+          </AnimatePresence>
+
           {/* Phone Frame Container */}
           <motion.div
             className={`relative ${
               isFullscreen
-                ? "fixed inset-0 z-50 flex items-center justify-center p-4"
+                ? "fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
                 : ""
             }`}
           >
-            {/* Fullscreen Backdrop */}
-            <AnimatePresence>
-              {isFullscreen && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-40"
-                  style={{ background: "rgba(0,0,0,0.9)" }}
-                  onClick={() => setIsFullscreen(false)}
-                />
-              )}
-            </AnimatePresence>
-
             <motion.div
-              className={`relative z-50 ${
+              className={`relative z-50 pointer-events-auto ${
                 isFullscreen
                   ? "w-[85vw] max-w-[400px]"
                   : "w-[300px] sm:w-[340px] lg:w-[360px]"

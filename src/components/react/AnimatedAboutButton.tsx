@@ -29,39 +29,57 @@ export default function AnimatedAboutButton() {
     return audioRef.current;
   }, []);
 
-  // Unlock audio on ANY user interaction
+  // Unlock audio on user interaction
+  // Note: Only click, touch, and keydown count as "user gestures" for browser autoplay policy
   useEffect(() => {
-    const unlock = () => {
-      if (!audioUnlocked) {
-        initAudio();
-        // Try playing a silent sound to fully unlock
-        const ctx = audioRef.current;
-        if (ctx && ctx.state === "running") {
+    const unlock = async () => {
+      if (audioUnlocked) return;
+
+      // Create fresh context if needed
+      if (!audioRef.current || audioRef.current.state === "closed") {
+        try {
+          audioRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        } catch {}
+      }
+
+      const ctx = audioRef.current;
+      if (!ctx) return;
+
+      // Resume if suspended
+      if (ctx.state === "suspended") {
+        try {
+          await ctx.resume();
+        } catch {}
+      }
+
+      // Play silent sound to fully unlock
+      if (ctx.state === "running") {
+        try {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
-          gain.gain.value = 0;
+          gain.gain.value = 0.001;
           osc.connect(gain).connect(ctx.destination);
           osc.start();
-          osc.stop(ctx.currentTime + 0.001);
+          osc.stop(ctx.currentTime + 0.01);
           setAudioUnlocked(true);
-        }
+        } catch {}
       }
     };
 
-    const events = ["click", "touchstart", "touchend", "mousedown", "mouseup", "keydown", "keyup", "scroll", "wheel", "mousemove", "pointerdown", "pointerup"];
-    events.forEach(e => window.addEventListener(e, unlock, { passive: true, capture: true }));
-    document.addEventListener("wheel", unlock, { passive: true });
-
-    // Also try on visibility change (tab switch back)
-    const onVisible = () => { if (document.visibilityState === "visible") unlock(); };
-    document.addEventListener("visibilitychange", onVisible);
+    // These are the only events browsers consider "user gestures" for audio
+    const gestureEvents = ["click", "touchstart", "touchend", "keydown", "mousedown", "pointerdown"];
+    gestureEvents.forEach(e => {
+      window.addEventListener(e, unlock, { passive: true, capture: true });
+      document.addEventListener(e, unlock, { passive: true, capture: true });
+    });
 
     initAudio();
 
     return () => {
-      events.forEach(e => window.removeEventListener(e, unlock, { capture: true }));
-      document.removeEventListener("wheel", unlock);
-      document.removeEventListener("visibilitychange", onVisible);
+      gestureEvents.forEach(e => {
+        window.removeEventListener(e, unlock, { capture: true });
+        document.removeEventListener(e, unlock, { capture: true });
+      });
     };
   }, [initAudio, audioUnlocked]);
 
