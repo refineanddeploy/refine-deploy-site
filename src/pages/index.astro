@@ -112,10 +112,8 @@ const services = [
 
         <!-- Hero Visual -->
         <div class="relative order-1 lg:order-2 w-full">
-          <!-- Animated About Button - Walks across to position -->
-          <div class="absolute -top-2 sm:-top-4 right-0 sm:right-4 lg:top-2 lg:right-0 z-30" style="overflow: visible;">
-            <AnimatedAboutButton client:load />
-          </div>
+          <!-- Animated About Button - Fixed positioned, walks to center -->
+          <AnimatedAboutButton client:load />
 
           <!-- Mobile: Preview cards with mockups -->
           <div class="lg:hidden w-full max-w-md mx-auto pt-16 sm:pt-20">
