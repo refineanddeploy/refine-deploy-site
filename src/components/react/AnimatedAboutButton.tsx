@@ -98,27 +98,17 @@ export default function AnimatedAboutButton() {
     osc.stop(now + 0.15);
   }, [initAudio]);
 
-  // Fire sounds from mp3 - play fire1 then fire2
+  // Fire sound from merged mp3
   const playFire = useCallback(() => {
-    // Stop any existing fire audio
     if (fireAudioRef.current) {
       fireAudioRef.current.pause();
       fireAudioRef.current = null;
     }
 
-    const audio1 = new Audio('/sounds/fire.mp3');
-    audio1.volume = 0.6;
-    fireAudioRef.current = audio1;
-
-    // When first sound ends, play second sound
-    audio1.onended = () => {
-      const audio2 = new Audio('/sounds/fire2.mp3');
-      audio2.volume = 0.6;
-      fireAudioRef.current = audio2;
-      audio2.play().catch(() => {});
-    };
-
-    audio1.play().catch(() => {});
+    const audio = new Audio('/sounds/fire.mp3');
+    audio.volume = 0.6;
+    fireAudioRef.current = audio;
+    audio.play().catch(() => {});
   }, []);
 
   useEffect(() => {
