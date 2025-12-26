@@ -132,7 +132,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
   const knobTravel = trackWidth - knobSize - padding * 2;
 
   // String sizes - hanging from right side of button
-  const stringLength = isCompact ? 28 : 40;
+  const stringLength = isCompact ? 56 : 80;
   const ballSize = isCompact ? 12 : 16;
 
   return (
