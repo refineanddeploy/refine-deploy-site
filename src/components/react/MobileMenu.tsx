@@ -81,10 +81,11 @@ export default function MobileMenu({ navLinks }: Props) {
 
             {/* Slide-in Panel */}
             <motion.nav
-              className="fixed top-0 right-0 h-full w-[85vw] max-w-sm z-[58] shadow-2xl"
+              className="fixed top-0 right-0 h-full w-[85vw] max-w-sm z-[58] shadow-2xl bg-primary"
               style={{
-                background: "rgb(var(--color-bg-primary))",
-                borderLeft: "1px solid rgba(var(--color-border), 0.2)"
+                backgroundColor: "rgb(var(--color-bg-primary))",
+                borderLeft: "1px solid rgba(var(--color-border), 0.2)",
+                opacity: 1
               }}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
