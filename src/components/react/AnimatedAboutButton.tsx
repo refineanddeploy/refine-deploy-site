@@ -48,8 +48,9 @@ export default function AnimatedAboutButton() {
       }
     };
 
-    const events = ["click", "touchstart", "touchend", "mousedown", "keydown", "scroll", "mousemove"];
+    const events = ["click", "touchstart", "touchend", "mousedown", "mouseup", "keydown", "keyup", "scroll", "wheel", "mousemove", "pointerdown", "pointerup"];
     events.forEach(e => window.addEventListener(e, unlock, { passive: true, capture: true }));
+    document.addEventListener("wheel", unlock, { passive: true });
 
     // Also try on visibility change (tab switch back)
     const onVisible = () => { if (document.visibilityState === "visible") unlock(); };
@@ -59,6 +60,7 @@ export default function AnimatedAboutButton() {
 
     return () => {
       events.forEach(e => window.removeEventListener(e, unlock, { capture: true }));
+      document.removeEventListener("wheel", unlock);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [initAudio, audioUnlocked]);
