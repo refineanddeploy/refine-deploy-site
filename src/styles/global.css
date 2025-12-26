@@ -203,12 +203,17 @@
     box-shadow: var(--glass-shadow);
   }
 
-  /* Header glass - solid color for consistent iOS status bar */
+  /* Header glass - theme-aware for iOS status bar */
   .header-glass {
-    background: #fafafa !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  [data-theme="dark"] .header-glass {
+    background: rgba(17, 24, 39, 0.95) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
   .glass-subtle {
