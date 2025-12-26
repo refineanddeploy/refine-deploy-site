@@ -41,41 +41,15 @@ export default function InteractivePhone({ projects }: Props) {
     return () => clearTimeout(timeout);
   }, [activeProject, isLoading]);
 
-  // Lock body scroll when fullscreen and handle iOS status bar color
+  // Lock body scroll when fullscreen
   useEffect(() => {
     if (isFullscreen) {
       document.body.style.overflow = "hidden";
-      // Set theme-color meta tag to black for iOS status bar
-      let metaTheme = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
-      if (!metaTheme) {
-        metaTheme = document.createElement("meta");
-        metaTheme.name = "theme-color";
-        document.head.appendChild(metaTheme);
-      }
-      metaTheme.setAttribute("data-previous", metaTheme.content || "");
-      metaTheme.content = "#000000";
     } else {
       document.body.style.overflow = "";
-      // Restore previous theme-color
-      const metaTheme = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
-      if (metaTheme) {
-        const previous = metaTheme.getAttribute("data-previous");
-        if (previous) {
-          metaTheme.content = previous;
-        } else {
-          metaTheme.remove();
-        }
-      }
     }
     return () => {
       document.body.style.overflow = "";
-      const metaTheme = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
-      if (metaTheme) {
-        const previous = metaTheme.getAttribute("data-previous");
-        if (previous) {
-          metaTheme.content = previous;
-        }
-      }
     };
   }, [isFullscreen]);
 
