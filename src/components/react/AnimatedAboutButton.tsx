@@ -171,7 +171,7 @@ export default function AnimatedAboutButton() {
   const buttonBottom = grabbing ? 15 : up ? 75 : 0;
 
   return (
-    <div className="fixed inset-x-0 top-20 sm:top-24 z-50 pointer-events-none">
+    <div className="absolute inset-x-0 top-0 z-20 pointer-events-none">
       <div className="flex justify-center">
         {/* Container - characters are 80px tall */}
         <div className="relative" style={{ width: "200px", height: "120px" }}>
