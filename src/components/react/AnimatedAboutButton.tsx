@@ -11,7 +11,8 @@ export default function AnimatedAboutButton() {
   const [holdFrame, setHoldFrame] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const audioRef = useRef<AudioContext | null>(null);
-  const soundsPlayed = useRef({ match: false, dig: false, lift: false, celebrate: false });
+  const soundsPlayed = useRef({ fire: false });
+  const fireAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
@@ -97,166 +98,33 @@ export default function AnimatedAboutButton() {
     osc.stop(now + 0.15);
   }, [initAudio]);
 
-  // Realistic match strike sound
-  const playMatch = useCallback(() => {
-    const ctx = initAudio(); if (!ctx) return;
-    const now = ctx.currentTime;
-
-    // Part 1: Strike/scratch sound (0-0.15s)
-    const scratchBuf = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
-    const scratchData = scratchBuf.getChannelData(0);
-    for (let i = 0; i < scratchData.length; i++) {
-      const t = i / scratchData.length;
-      const env = Math.exp(-t * 8) * 0.6;
-      scratchData[i] = (Math.random() * 2 - 1) * env;
-    }
-    const scratchSrc = ctx.createBufferSource();
-    scratchSrc.buffer = scratchBuf;
-    const scratchBp = ctx.createBiquadFilter();
-    scratchBp.type = "bandpass";
-    scratchBp.frequency.value = 2500;
-    scratchBp.Q.value = 1;
-    const scratchGain = ctx.createGain();
-    scratchGain.gain.value = 0.4;
-    scratchSrc.connect(scratchBp).connect(scratchGain).connect(ctx.destination);
-    scratchSrc.start(now);
-
-    // Part 2: Ignition whoosh (0.1-0.4s)
-    const whooshBuf = ctx.createBuffer(1, ctx.sampleRate * 0.35, ctx.sampleRate);
-    const whooshData = whooshBuf.getChannelData(0);
-    for (let i = 0; i < whooshData.length; i++) {
-      const t = i / whooshData.length;
-      const env = Math.sin(t * Math.PI) * 0.5;
-      whooshData[i] = (Math.random() * 2 - 1) * env;
-    }
-    const whooshSrc = ctx.createBufferSource();
-    whooshSrc.buffer = whooshBuf;
-    const whooshLp = ctx.createBiquadFilter();
-    whooshLp.type = "lowpass";
-    whooshLp.frequency.setValueAtTime(400, now + 0.1);
-    whooshLp.frequency.linearRampToValueAtTime(1200, now + 0.3);
-    const whooshGain = ctx.createGain();
-    whooshGain.gain.setValueAtTime(0, now);
-    whooshGain.gain.linearRampToValueAtTime(0.35, now + 0.15);
-    whooshGain.gain.linearRampToValueAtTime(0.2, now + 0.4);
-    whooshSrc.connect(whooshLp).connect(whooshGain).connect(ctx.destination);
-    whooshSrc.start(now + 0.08);
-
-    // Part 3: Flame crackling (0.3s onwards)
-    const flameBuf = ctx.createBuffer(1, ctx.sampleRate * 1.5, ctx.sampleRate);
-    const flameData = flameBuf.getChannelData(0);
-    for (let i = 0; i < flameData.length; i++) {
-      const t = i / flameData.length;
-      const env = (1 - Math.exp(-t * 5)) * Math.exp(-t * 0.8) * 0.3;
-      const crackle = Math.random() > 0.98 ? (Math.random() * 2 - 1) * 2 : 0;
-      flameData[i] = ((Math.random() * 2 - 1) + crackle) * env;
-    }
-    const flameSrc = ctx.createBufferSource();
-    flameSrc.buffer = flameBuf;
-    const flameLp = ctx.createBiquadFilter();
-    flameLp.type = "lowpass";
-    flameLp.frequency.value = 600;
-    const flameHp = ctx.createBiquadFilter();
-    flameHp.type = "highpass";
-    flameHp.frequency.value = 100;
-    const flameGain = ctx.createGain();
-    flameGain.gain.setValueAtTime(0, now);
-    flameGain.gain.linearRampToValueAtTime(0.3, now + 0.5);
-    flameGain.gain.linearRampToValueAtTime(0.15, now + 1.5);
-    flameSrc.connect(flameHp).connect(flameLp).connect(flameGain).connect(ctx.destination);
-    flameSrc.start(now + 0.25);
-  }, [initAudio]);
-
-  // Mario-style dig - brick break
-  const playDig = useCallback(() => {
-    const ctx = initAudio(); if (!ctx) return;
-    const now = ctx.currentTime;
-
-    // Quick descending blip
-    const osc = ctx.createOscillator();
-    osc.type = "square";
-    osc.frequency.setValueAtTime(400, now);
-    osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.15);
-  }, [initAudio]);
-
-  // Mario-style lift - power up sound
-  const playLift = useCallback(() => {
-    const ctx = initAudio(); if (!ctx) return;
-    const now = ctx.currentTime;
-
-    // Ascending arpeggio like Mario power-up
-    const notes = [196, 247, 294, 370, 440]; // G3, B3, D4, F#4, A4
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      osc.type = "square";
-      osc.frequency.value = freq;
-
-      const gain = ctx.createGain();
-      const startTime = now + i * 0.06;
-      gain.gain.setValueAtTime(0.12, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.1);
-
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(startTime);
-      osc.stop(startTime + 0.12);
-    });
-  }, [initAudio]);
-
-  // Fire starting sound - crackling with rising intensity
-  const playCelebrate = useCallback(() => {
-    const ctx = initAudio(); if (!ctx) return;
-    const now = ctx.currentTime;
-
-    // Crackling fire noise
-    const bufSize = ctx.sampleRate * 1.2;
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-
-    for (let i = 0; i < bufSize; i++) {
-      const t = i / bufSize;
-      // Rising intensity envelope
-      const envelope = Math.pow(t, 0.5) * 0.4;
-      // Random crackles
-      const crackle = Math.random() > 0.97 ? (Math.random() * 2 - 1) * 3 : 0;
-      // Base fire noise
-      const noise = (Math.random() * 2 - 1) * envelope;
-      data[i] = noise + crackle * envelope;
+  // Fire sound from mp3 - play first half only
+  const playFire = useCallback(() => {
+    // Stop any existing fire audio
+    if (fireAudioRef.current) {
+      fireAudioRef.current.pause();
+      fireAudioRef.current = null;
     }
 
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
+    const audio = new Audio('/sounds/fire.mp3');
+    audio.volume = 0.6;
+    fireAudioRef.current = audio;
 
-    // Low rumble filter
-    const lp = ctx.createBiquadFilter();
-    lp.type = "lowpass";
-    lp.frequency.setValueAtTime(300, now);
-    lp.frequency.linearRampToValueAtTime(800, now + 1);
+    // Stop at halfway point (~4.5 seconds)
+    const stopAtHalf = () => {
+      setTimeout(() => {
+        if (fireAudioRef.current) {
+          fireAudioRef.current.pause();
+          fireAudioRef.current = null;
+        }
+      }, 4500);
+    };
 
-    // Add some warmth
-    const hp = ctx.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.value = 80;
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.1, now);
-    gain.gain.linearRampToValueAtTime(0.25, now + 0.6);
-    gain.gain.linearRampToValueAtTime(0.15, now + 1);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-
-    src.connect(hp).connect(lp).connect(gain).connect(ctx.destination);
-    src.start(now);
-  }, [initAudio]);
+    audio.play().then(stopAtHalf).catch(() => {});
+  }, []);
 
   useEffect(() => {
-    soundsPlayed.current = { match: false, dig: false, lift: false, celebrate: false };
+    soundsPlayed.current = { fire: false };
     const t = setTimeout(() => { setPhase("walking"); setStepCount(0); }, 200);
     return () => clearTimeout(t);
   }, [animKey]);
@@ -271,36 +139,34 @@ export default function AnimatedAboutButton() {
 
   useEffect(() => {
     if (phase !== "crouching") return;
-    if (!soundsPlayed.current.match) { soundsPlayed.current.match = true; playMatch(); }
+    if (!soundsPlayed.current.fire) { soundsPlayed.current.fire = true; playFire(); }
     const t = setTimeout(() => setPhase("grabbing"), 500);
     return () => clearTimeout(t);
-  }, [phase, playMatch]);
+  }, [phase, playFire]);
 
   useEffect(() => {
     if (phase !== "grabbing") return;
-    if (!soundsPlayed.current.dig) { soundsPlayed.current.dig = true; playDig(); }
     const t = setTimeout(() => setPhase("lifting"), 800);
     return () => clearTimeout(t);
-  }, [phase, playDig]);
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "lifting") return;
-    if (!soundsPlayed.current.lift) { soundsPlayed.current.lift = true; playLift(); }
     const t = setTimeout(() => setPhase("holding"), 700);
     return () => clearTimeout(t);
-  }, [phase, playLift]);
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "holding") return;
-    if (!soundsPlayed.current.celebrate) { soundsPlayed.current.celebrate = true; playCelebrate(); }
     const iv = setInterval(() => setHoldFrame(f => f + 1), 300);
     return () => clearInterval(iv);
-  }, [phase, playCelebrate]);
+  }, [phase]);
 
   const replay = useCallback(() => {
     if (audioRef.current) try { audioRef.current.close(); } catch {}
+    if (fireAudioRef.current) { fireAudioRef.current.pause(); fireAudioRef.current = null; }
     audioRef.current = null; initAudio();
-    soundsPlayed.current = { match: false, dig: false, lift: false, celebrate: false };
+    soundsPlayed.current = { fire: false };
     setPhase(null); setStepCount(0); setHoldFrame(0); setAnimKey(k => k + 1);
   }, [initAudio]);
 
