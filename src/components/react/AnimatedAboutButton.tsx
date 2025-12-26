@@ -11,11 +11,23 @@ export default function AnimatedAboutButton() {
   const [holdFrame, setHoldFrame] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const soundsPlayed = useRef({ sound: false });
   const fireAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const [audioUnlocked, setAudioUnlocked] = useState(false);
+
+  // Detect theme changes
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.getAttribute('data-theme') === 'dark');
+    };
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
 
   const initAudio = useCallback(() => {
     if (!audioRef.current || audioRef.current.state === "closed") {
@@ -387,35 +399,39 @@ export default function AnimatedAboutButton() {
                 transition={{ duration: 0.5 }}
                 style={{ width: 50, height: 55 }}
               >
-                {/* Large ambient light - illuminates the whole area */}
+                {/* Large ambient light - illuminates the whole area (bigger & brighter in dark mode) */}
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
                   style={{
-                    width: 200,
-                    height: 200,
-                    bottom: -60,
-                    background: "radial-gradient(ellipse, rgba(255,150,50,0.35) 0%, rgba(255,100,30,0.15) 30%, rgba(255,80,20,0.05) 50%, transparent 70%)",
-                    filter: "blur(20px)",
+                    width: isDark ? 280 : 200,
+                    height: isDark ? 280 : 200,
+                    bottom: isDark ? -80 : -60,
+                    background: isDark
+                      ? "radial-gradient(ellipse, rgba(255,160,60,0.55) 0%, rgba(255,120,40,0.3) 25%, rgba(255,80,20,0.12) 50%, transparent 70%)"
+                      : "radial-gradient(ellipse, rgba(255,150,50,0.35) 0%, rgba(255,100,30,0.15) 30%, rgba(255,80,20,0.05) 50%, transparent 70%)",
+                    filter: isDark ? "blur(25px)" : "blur(20px)",
                   }}
                   animate={{
-                    opacity: [0.7, 1, 0.8, 0.95, 0.7],
+                    opacity: isDark ? [0.85, 1, 0.9, 1, 0.85] : [0.7, 1, 0.8, 0.95, 0.7],
                     scale: [1, 1.08, 0.96, 1.04, 1],
                   }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                 />
 
-                {/* Core bright glow */}
+                {/* Core bright glow (brighter in dark mode) */}
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 rounded-full"
                   style={{
-                    width: 60,
-                    height: 40,
-                    bottom: -5,
-                    background: "radial-gradient(ellipse, rgba(255,200,100,0.8) 0%, rgba(255,120,50,0.5) 40%, transparent 70%)",
-                    filter: "blur(8px)",
+                    width: isDark ? 80 : 60,
+                    height: isDark ? 55 : 40,
+                    bottom: isDark ? -8 : -5,
+                    background: isDark
+                      ? "radial-gradient(ellipse, rgba(255,220,120,0.95) 0%, rgba(255,150,60,0.7) 40%, transparent 70%)"
+                      : "radial-gradient(ellipse, rgba(255,200,100,0.8) 0%, rgba(255,120,50,0.5) 40%, transparent 70%)",
+                    filter: isDark ? "blur(10px)" : "blur(8px)",
                   }}
                   animate={{
-                    opacity: [0.8, 1, 0.85, 0.95, 0.8],
+                    opacity: isDark ? [0.9, 1, 0.92, 1, 0.9] : [0.8, 1, 0.85, 0.95, 0.8],
                     scale: [1, 1.15, 0.95, 1.1, 1],
                   }}
                   transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
