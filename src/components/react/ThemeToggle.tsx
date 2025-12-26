@@ -315,7 +315,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
         className="absolute cursor-pointer select-none"
         style={{
           right: isCompact ? 8 : 10,
-          top: trackHeight,
+          top: trackHeight + 2,
           width: ballSize + 4,
           height: stringLength + ballSize + 30,
         }}
