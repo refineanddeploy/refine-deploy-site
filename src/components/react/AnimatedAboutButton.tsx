@@ -258,44 +258,6 @@ export default function AnimatedAboutButton() {
             )}
           </AnimatePresence>
 
-          {/* Snow Footsteps - teal colored */}
-          {walking && [...Array(stepCount)].map((_, i) => (
-            <motion.div
-              key={`footstep-left-${i}`}
-              className="absolute bottom-0"
-              style={{
-                left: `${-50 + (i + 1) * 18}px`,
-              }}
-              initial={{ opacity: 0.8, scale: 1 }}
-              animate={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 2, delay: 0.5 }}
-            >
-              {/* Left foot */}
-              <svg width="8" height="12" viewBox="0 0 8 12" style={{ position: 'absolute', left: 0 }}>
-                <ellipse cx="4" cy="6" rx="3" ry="5" fill="rgb(var(--color-accent))" opacity="0.6" />
-                <ellipse cx="4" cy="2" rx="1.5" ry="1.5" fill="rgb(var(--color-accent))" opacity="0.5" />
-              </svg>
-            </motion.div>
-          ))}
-          {walking && [...Array(stepCount)].map((_, i) => (
-            <motion.div
-              key={`footstep-right-${i}`}
-              className="absolute bottom-0"
-              style={{
-                right: `${-50 + (i + 1) * 18}px`,
-              }}
-              initial={{ opacity: 0.8, scale: 1 }}
-              animate={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 2, delay: 0.5 }}
-            >
-              {/* Right foot */}
-              <svg width="8" height="12" viewBox="0 0 8 12" style={{ position: 'absolute', right: 0 }}>
-                <ellipse cx="4" cy="6" rx="3" ry="5" fill="rgb(var(--color-accent))" opacity="0.6" />
-                <ellipse cx="4" cy="2" rx="1.5" ry="1.5" fill="rgb(var(--color-accent))" opacity="0.5" />
-              </svg>
-            </motion.div>
-          ))}
-
           {/* MALE CHARACTER - left side (snow clothes) */}
           <motion.div
             key={`m${animKey}`}
