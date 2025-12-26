@@ -10,6 +10,7 @@ export default function AnimatedAboutButton() {
   const [stepCount, setStepCount] = useState(0);
   const [holdFrame, setHoldFrame] = useState(0);
   const [animKey, setAnimKey] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const soundsPlayed = useRef({ sound: false });
   const fireAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -30,59 +31,27 @@ export default function AnimatedAboutButton() {
     return audioRef.current;
   }, []);
 
-  // Unlock audio on user interaction
-  // Note: Only click, touch, and keydown count as "user gestures" for browser autoplay policy
+  // Start animation on first user interaction (fixes sound not playing on first load)
   useEffect(() => {
-    const unlock = async () => {
-      if (audioUnlocked) return;
-
-      // Create fresh context if needed
-      if (!audioRef.current || audioRef.current.state === "closed") {
-        try {
-          audioRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-        } catch {}
-      }
-
-      const ctx = audioRef.current;
-      if (!ctx) return;
-
-      // Resume if suspended
-      if (ctx.state === "suspended") {
-        try {
-          await ctx.resume();
-        } catch {}
-      }
-
-      // Play silent sound to fully unlock
-      if (ctx.state === "running") {
-        try {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          gain.gain.value = 0.001;
-          osc.connect(gain).connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.01);
-          setAudioUnlocked(true);
-        } catch {}
-      }
+    const startOnInteraction = () => {
+      if (hasStarted) return;
+      setHasStarted(true);
+      setAudioUnlocked(true);
     };
 
-    // These are the only events browsers consider "user gestures" for audio
-    const gestureEvents = ["click", "touchstart", "touchend", "keydown", "mousedown", "pointerdown"];
+    const gestureEvents = ["click", "touchstart", "touchend", "mousedown", "pointerdown"];
     gestureEvents.forEach(e => {
-      window.addEventListener(e, unlock, { passive: true, capture: true });
-      document.addEventListener(e, unlock, { passive: true, capture: true });
+      window.addEventListener(e, startOnInteraction, { passive: true, capture: true });
+      document.addEventListener(e, startOnInteraction, { passive: true, capture: true });
     });
-
-    initAudio();
 
     return () => {
       gestureEvents.forEach(e => {
-        window.removeEventListener(e, unlock, { capture: true });
-        document.removeEventListener(e, unlock, { capture: true });
+        window.removeEventListener(e, startOnInteraction, { capture: true });
+        document.removeEventListener(e, startOnInteraction, { capture: true });
       });
     };
-  }, [initAudio, audioUnlocked]);
+  }, [hasStarted]);
 
   // Combined animation sound (footsteps + fire)
   const playAnimationSound = useCallback(() => {
@@ -98,10 +67,11 @@ export default function AnimatedAboutButton() {
   }, []);
 
   useEffect(() => {
+    if (!hasStarted) return;
     soundsPlayed.current = { sound: false };
     const t = setTimeout(() => { setPhase("walking"); setStepCount(0); }, 200);
     return () => clearTimeout(t);
-  }, [animKey]);
+  }, [animKey, hasStarted]);
 
   useEffect(() => {
     if (phase !== "walking") return;
@@ -199,7 +169,7 @@ export default function AnimatedAboutButton() {
             )}
           </AnimatePresence>
 
-          {/* MALE CHARACTER - left side */}
+          {/* MALE CHARACTER - left side (snow clothes) */}
           <motion.div
             key={`m${animKey}`}
             className="absolute bottom-0 left-0"
@@ -213,81 +183,94 @@ export default function AnimatedAboutButton() {
               animate={{ y: walking ? [0, -2, 0] : 0 }}
               transition={{ duration: 0.35, repeat: walking ? Infinity : 0 }}
             >
-              {/* Head */}
-              <circle cx="30" cy="12" r="9" fill="#FDBF9C" />
-              <path d="M21 10 C21 3 39 3 39 10" fill="#5D4037" />
-              <circle cx="26" cy="11" r="1.5" fill="#333" />
-              <circle cx="34" cy="11" r="1.5" fill="#333" />
-              <path d="M26 16 Q30 19 34 16" stroke="#333" strokeWidth="1.5" fill="none" />
+              {/* Winter Hat/Beanie */}
+              <ellipse cx="30" cy="5" rx="11" ry="5" fill="#1E3A5F" />
+              <rect x="19" y="3" width="22" height="8" rx="2" fill="#1E3A5F" />
+              <circle cx="30" cy="1" r="3" fill="#fff" /> {/* Pom pom */}
 
-              {/* Body */}
+              {/* Head */}
+              <circle cx="30" cy="14" r="8" fill="#FDBF9C" />
+              <circle cx="26" cy="13" r="1.5" fill="#333" />
+              <circle cx="34" cy="13" r="1.5" fill="#333" />
+              <path d="M26 17 Q30 20 34 17" stroke="#333" strokeWidth="1.5" fill="none" />
+
+              {/* Scarf */}
+              <rect x="22" y="21" width="16" height="5" rx="2" fill="#C41E3A" />
+              <rect x="35" y="23" width="4" height="12" rx="1" fill="#C41E3A" />
+
+              {/* Winter Coat Body */}
               <motion.rect
-                x="20" y="22" width="20" rx="3"
-                style={{ fill: "rgb(var(--color-accent))" }}
+                x="18" y="25" width="24" rx="3" fill="#1E3A5F"
                 animate={{ height: bent ? 18 : 26 }}
               />
+              {/* Coat zipper */}
+              <motion.line x1="30" y1="26" x2="30" stroke="#FFD700" strokeWidth="1" animate={{ y2: bent ? 42 : 50 }} />
 
-              {/* RIGHT ARM - REACHES UP to hold button */}
-              <motion.g style={{ transformOrigin: "40px 24px" }}>
+              {/* RIGHT ARM with coat sleeve */}
+              <motion.g style={{ transformOrigin: "42px 27px" }}>
                 <motion.line
-                  x1="40" y1="24"
-                  stroke="rgb(var(--color-accent))"
-                  strokeWidth="6"
+                  x1="42" y1="27"
+                  stroke="#1E3A5F"
+                  strokeWidth="7"
                   strokeLinecap="round"
                   animate={{
-                    x2: bent ? 52 : up ? 50 : (walking ? (step ? 48 : 52) : 50),
-                    y2: bent ? 36 : up ? 0 : (walking ? (step ? 32 : 28) : 30),
+                    x2: bent ? 54 : up ? 52 : (walking ? (step ? 50 : 54) : 52),
+                    y2: bent ? 38 : up ? 2 : (walking ? (step ? 34 : 30) : 32),
                   }}
                   transition={{ duration: 0.3 }}
                 />
+                {/* Mittens */}
                 <motion.circle
                   r="5"
-                  fill="#FDBF9C"
+                  fill="#C41E3A"
                   animate={{
-                    cx: bent ? 54 : up ? 52 : (walking ? (step ? 50 : 54) : 52),
-                    cy: bent ? 38 : up ? -2 : (walking ? (step ? 34 : 30) : 32),
+                    cx: bent ? 56 : up ? 54 : (walking ? (step ? 52 : 56) : 54),
+                    cy: bent ? 40 : up ? 0 : (walking ? (step ? 36 : 32) : 34),
                   }}
                   transition={{ duration: 0.3 }}
                 />
               </motion.g>
 
-              {/* LEFT ARM - waves during celebration */}
-              <motion.g style={{ transformOrigin: "20px 24px" }}>
+              {/* LEFT ARM with coat sleeve */}
+              <motion.g style={{ transformOrigin: "18px 27px" }}>
                 <motion.line
-                  x1="20" y1="24"
-                  stroke="rgb(var(--color-accent))"
-                  strokeWidth="6"
+                  x1="18" y1="27"
+                  stroke="#1E3A5F"
+                  strokeWidth="7"
                   strokeLinecap="round"
                   animate={{
-                    x2: bent ? 8 : (holding ? (dance ? 4 : 12) : (walking ? (step ? 12 : 8) : 10)),
-                    y2: bent ? 36 : (holding ? (dance ? 10 : 36) : (walking ? (step ? 28 : 32) : 30)),
+                    x2: bent ? 6 : (holding ? (dance ? 2 : 10) : (walking ? (step ? 10 : 6) : 8)),
+                    y2: bent ? 38 : (holding ? (dance ? 12 : 38) : (walking ? (step ? 30 : 34) : 32)),
                   }}
                   transition={{ duration: 0.3 }}
                 />
+                {/* Mittens */}
                 <motion.circle
                   r="5"
-                  fill="#FDBF9C"
+                  fill="#C41E3A"
                   animate={{
-                    cx: bent ? 6 : (holding ? (dance ? 2 : 10) : (walking ? (step ? 10 : 6) : 8)),
-                    cy: bent ? 38 : (holding ? (dance ? 8 : 38) : (walking ? (step ? 30 : 34) : 32)),
+                    cx: bent ? 4 : (holding ? (dance ? 0 : 8) : (walking ? (step ? 8 : 4) : 6)),
+                    cy: bent ? 40 : (holding ? (dance ? 10 : 40) : (walking ? (step ? 32 : 36) : 34)),
                   }}
                   transition={{ duration: 0.3 }}
                 />
               </motion.g>
 
-              {/* Legs */}
+              {/* Snow Pants */}
               <motion.g animate={{ x: walking ? (step ? -3 : 3) : 0 }}>
-                <motion.rect fill="#455A64" x="22" width="7" rx="2" animate={{ y: bent ? 40 : 48, height: bent ? 20 : 24 }} />
-                <motion.rect fill="#333" x="21" width="9" rx="2" animate={{ y: bent ? 58 : 70, height: bent ? 12 : 14 }} />
+                <motion.rect fill="#2C3E50" x="21" width="8" rx="2" animate={{ y: bent ? 42 : 50, height: bent ? 18 : 22 }} />
+                {/* Snow Boots */}
+                <motion.rect fill="#5D4037" x="20" width="10" rx="2" animate={{ y: bent ? 58 : 70, height: bent ? 12 : 14 }} />
               </motion.g>
               <motion.g animate={{ x: walking ? (step ? 3 : -3) : 0 }}>
-                <motion.rect fill="#455A64" x="31" width="7" rx="2" animate={{ y: bent ? 40 : 48, height: bent ? 20 : 24 }} />
-                <motion.rect fill="#333" x="30" width="9" rx="2" animate={{ y: bent ? 58 : 70, height: bent ? 12 : 14 }} />
+                <motion.rect fill="#2C3E50" x="31" width="8" rx="2" animate={{ y: bent ? 42 : 50, height: bent ? 18 : 22 }} />
+                {/* Snow Boots */}
+                <motion.rect fill="#5D4037" x="30" width="10" rx="2" animate={{ y: bent ? 58 : 70, height: bent ? 12 : 14 }} />
               </motion.g>
             </motion.svg>
           </motion.div>
 
-          {/* FEMALE CHARACTER - right side */}
+          {/* FEMALE CHARACTER - right side (snow clothes) */}
           <motion.div
             key={`f${animKey}`}
             className="absolute bottom-0 right-0"
@@ -301,77 +284,93 @@ export default function AnimatedAboutButton() {
               animate={{ y: walking ? [0, -2, 0] : 0 }}
               transition={{ duration: 0.35, repeat: walking ? Infinity : 0, delay: 0.175 }}
             >
-              {/* Head */}
-              <circle cx="30" cy="12" r="8" fill="#DEB887" />
-              <ellipse cx="30" cy="7" rx="10" ry="6" fill="#2C1810" />
-              <path d="M20 7 Q18 20 24 32" fill="#2C1810" />
-              <path d="M40 7 Q42 20 36 32" fill="#2C1810" />
-              <circle cx="26" cy="11" r="1.5" fill="#333" />
-              <circle cx="34" cy="11" r="1.5" fill="#333" />
-              <path d="M26 16 Q30 19 34 16" stroke="#333" strokeWidth="1.5" fill="none" />
+              {/* Winter Hat with ear flaps */}
+              <ellipse cx="30" cy="5" rx="12" ry="5" fill="#E91E63" />
+              <rect x="18" y="3" width="24" height="10" rx="2" fill="#E91E63" />
+              <rect x="18" y="10" width="6" height="8" rx="2" fill="#E91E63" /> {/* Left ear flap */}
+              <rect x="36" y="10" width="6" height="8" rx="2" fill="#E91E63" /> {/* Right ear flap */}
+              <ellipse cx="30" cy="1" rx="4" ry="2" fill="#fff" /> {/* Fluffy top */}
 
-              {/* Body - dress */}
+              {/* Head */}
+              <circle cx="30" cy="14" r="7" fill="#DEB887" />
+              <circle cx="27" cy="13" r="1.5" fill="#333" />
+              <circle cx="33" cy="13" r="1.5" fill="#333" />
+              <path d="M27 17 Q30 19 33 17" stroke="#333" strokeWidth="1.5" fill="none" />
+
+              {/* Scarf */}
+              <rect x="21" y="20" width="18" height="5" rx="2" fill="#fff" />
+              <rect x="18" y="22" width="5" height="14" rx="1" fill="#fff" />
+
+              {/* Winter Coat Body */}
               <motion.path
                 fill="#E91E63"
-                animate={{ d: bent ? "M20 22 L16 42 L44 42 L40 22 Z" : "M20 22 L14 52 L46 52 L40 22 Z" }}
+                animate={{ d: bent ? "M18 24 L14 44 L46 44 L42 24 Z" : "M18 24 L12 52 L48 52 L42 24 Z" }}
               />
+              {/* Coat buttons */}
+              <circle cx="30" cy="30" r="2" fill="#fff" />
+              <circle cx="30" cy="38" r="2" fill="#fff" />
+              <motion.circle cx="30" r="2" fill="#fff" animate={{ cy: bent ? 44 : 46 }} />
 
-              {/* LEFT ARM - REACHES UP to hold button */}
-              <motion.g style={{ transformOrigin: "20px 24px" }}>
+              {/* LEFT ARM with coat sleeve */}
+              <motion.g style={{ transformOrigin: "18px 26px" }}>
                 <motion.line
-                  x1="20" y1="24"
+                  x1="18" y1="26"
                   stroke="#E91E63"
-                  strokeWidth="6"
+                  strokeWidth="7"
                   strokeLinecap="round"
                   animate={{
-                    x2: bent ? 8 : up ? 10 : (walking ? (step ? 12 : 8) : 10),
-                    y2: bent ? 36 : up ? 0 : (walking ? (step ? 28 : 32) : 30),
+                    x2: bent ? 6 : up ? 8 : (walking ? (step ? 10 : 6) : 8),
+                    y2: bent ? 38 : up ? 2 : (walking ? (step ? 30 : 34) : 32),
                   }}
                   transition={{ duration: 0.3 }}
                 />
+                {/* White mittens */}
                 <motion.circle
                   r="5"
-                  fill="#DEB887"
+                  fill="#fff"
                   animate={{
-                    cx: bent ? 6 : up ? 8 : (walking ? (step ? 10 : 6) : 8),
-                    cy: bent ? 38 : up ? -2 : (walking ? (step ? 30 : 34) : 32),
+                    cx: bent ? 4 : up ? 6 : (walking ? (step ? 8 : 4) : 6),
+                    cy: bent ? 40 : up ? 0 : (walking ? (step ? 32 : 36) : 34),
                   }}
                   transition={{ duration: 0.3 }}
                 />
               </motion.g>
 
-              {/* RIGHT ARM - waves during celebration */}
-              <motion.g style={{ transformOrigin: "40px 24px" }}>
+              {/* RIGHT ARM with coat sleeve */}
+              <motion.g style={{ transformOrigin: "42px 26px" }}>
                 <motion.line
-                  x1="40" y1="24"
+                  x1="42" y1="26"
                   stroke="#E91E63"
-                  strokeWidth="6"
+                  strokeWidth="7"
                   strokeLinecap="round"
                   animate={{
-                    x2: bent ? 52 : (holding ? (dance ? 56 : 48) : (walking ? (step ? 48 : 52) : 50)),
-                    y2: bent ? 36 : (holding ? (dance ? 10 : 36) : (walking ? (step ? 32 : 28) : 30)),
+                    x2: bent ? 54 : (holding ? (dance ? 58 : 50) : (walking ? (step ? 50 : 54) : 52)),
+                    y2: bent ? 38 : (holding ? (dance ? 12 : 38) : (walking ? (step ? 34 : 30) : 32)),
                   }}
                   transition={{ duration: 0.3 }}
                 />
+                {/* White mittens */}
                 <motion.circle
                   r="5"
-                  fill="#DEB887"
+                  fill="#fff"
                   animate={{
-                    cx: bent ? 54 : (holding ? (dance ? 58 : 50) : (walking ? (step ? 50 : 54) : 52)),
-                    cy: bent ? 38 : (holding ? (dance ? 8 : 38) : (walking ? (step ? 34 : 30) : 32)),
+                    cx: bent ? 56 : (holding ? (dance ? 60 : 52) : (walking ? (step ? 52 : 56) : 54)),
+                    cy: bent ? 40 : (holding ? (dance ? 10 : 40) : (walking ? (step ? 36 : 32) : 34)),
                   }}
                   transition={{ duration: 0.3 }}
                 />
               </motion.g>
 
-              {/* Legs */}
+              {/* Snow Pants */}
               <motion.g animate={{ x: walking ? (step ? -2 : 2) : 0 }}>
-                <motion.rect fill="#DEB887" x="24" width="6" rx="2" animate={{ y: bent ? 42 : 52, height: bent ? 16 : 20 }} />
-                <motion.rect fill="#E91E63" x="23" width="8" rx="2" animate={{ y: bent ? 56 : 70, height: bent ? 12 : 14 }} />
+                <motion.rect fill="#2C3E50" x="23" width="7" rx="2" animate={{ y: bent ? 44 : 52, height: bent ? 14 : 20 }} />
+                {/* Snow Boots */}
+                <motion.rect fill="#5D4037" x="22" width="9" rx="2" animate={{ y: bent ? 56 : 70, height: bent ? 12 : 14 }} />
               </motion.g>
               <motion.g animate={{ x: walking ? (step ? 2 : -2) : 0 }}>
-                <motion.rect fill="#DEB887" x="30" width="6" rx="2" animate={{ y: bent ? 42 : 52, height: bent ? 16 : 20 }} />
-                <motion.rect fill="#E91E63" x="29" width="8" rx="2" animate={{ y: bent ? 56 : 70, height: bent ? 12 : 14 }} />
+                <motion.rect fill="#2C3E50" x="30" width="7" rx="2" animate={{ y: bent ? 44 : 52, height: bent ? 14 : 20 }} />
+                {/* Snow Boots */}
+                <motion.rect fill="#5D4037" x="29" width="9" rx="2" animate={{ y: bent ? 56 : 70, height: bent ? 12 : 14 }} />
               </motion.g>
             </motion.svg>
           </motion.div>
