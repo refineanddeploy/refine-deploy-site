@@ -187,7 +187,7 @@ export default function AnimatedAboutButton() {
 
   useEffect(() => {
     if (phase !== "holding") return;
-    const iv = setInterval(() => setHoldFrame(f => f + 1), 600);
+    const iv = setInterval(() => setHoldFrame(f => f + 1), 300);
     return () => clearInterval(iv);
   }, [phase]);
 
@@ -295,28 +295,54 @@ export default function AnimatedAboutButton() {
               {/* Coat zipper */}
               <motion.line x1="30" y1="26" x2="30" stroke="#FFD700" strokeWidth="1" animate={{ y2: bent ? 42 : 50 }} />
 
-              {/* RIGHT ARM with coat sleeve - rotates from shoulder */}
-              <motion.g
-                animate={{
-                  rotate: bent ? 30 : up ? -90 : (walking ? (step ? 15 : -15) : 0),
-                }}
-                style={{ originX: "42px", originY: "27px", transformOrigin: "42px 27px" }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-              >
-                <line x1="42" y1="27" x2="54" y2="40" stroke="#1E3A5F" strokeWidth="7" strokeLinecap="round" />
-                <circle cx="56" cy="42" r="5" fill="#C41E3A" />
+              {/* RIGHT ARM with coat sleeve */}
+              <motion.g style={{ transformOrigin: "42px 27px" }}>
+                <motion.line
+                  x1="42" y1="27"
+                  stroke="#1E3A5F"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  animate={{
+                    x2: bent ? 54 : up ? 52 : (walking ? (step ? 50 : 54) : 52),
+                    y2: bent ? 38 : up ? 2 : (walking ? (step ? 34 : 30) : 32),
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
+                {/* Mittens */}
+                <motion.circle
+                  r="5"
+                  fill="#C41E3A"
+                  animate={{
+                    cx: bent ? 56 : up ? 54 : (walking ? (step ? 52 : 56) : 54),
+                    cy: bent ? 40 : up ? 0 : (walking ? (step ? 36 : 32) : 34),
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
               </motion.g>
 
-              {/* LEFT ARM with coat sleeve - rotates from shoulder */}
-              <motion.g
-                animate={{
-                  rotate: bent ? -30 : (holding ? (dance ? 90 : -30) : (walking ? (step ? -15 : 15) : 0)),
-                }}
-                style={{ originX: "18px", originY: "27px", transformOrigin: "18px 27px" }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-              >
-                <line x1="18" y1="27" x2="6" y2="40" stroke="#1E3A5F" strokeWidth="7" strokeLinecap="round" />
-                <circle cx="4" cy="42" r="5" fill="#C41E3A" />
+              {/* LEFT ARM with coat sleeve */}
+              <motion.g style={{ transformOrigin: "18px 27px" }}>
+                <motion.line
+                  x1="18" y1="27"
+                  stroke="#1E3A5F"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  animate={{
+                    x2: bent ? 6 : (holding ? (dance ? 2 : 10) : (walking ? (step ? 10 : 6) : 8)),
+                    y2: bent ? 38 : (holding ? (dance ? 12 : 38) : (walking ? (step ? 30 : 34) : 32)),
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
+                {/* Mittens */}
+                <motion.circle
+                  r="5"
+                  fill="#C41E3A"
+                  animate={{
+                    cx: bent ? 4 : (holding ? (dance ? 0 : 8) : (walking ? (step ? 8 : 4) : 6)),
+                    cy: bent ? 40 : (holding ? (dance ? 10 : 40) : (walking ? (step ? 32 : 36) : 34)),
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
               </motion.g>
 
               {/* Snow Pants */}
@@ -374,28 +400,54 @@ export default function AnimatedAboutButton() {
               <circle cx="30" cy="38" r="2" fill="#fff" />
               <motion.circle cx="30" r="2" fill="#fff" animate={{ cy: bent ? 44 : 46 }} />
 
-              {/* LEFT ARM with coat sleeve - rotates from shoulder */}
-              <motion.g
-                animate={{
-                  rotate: bent ? -30 : up ? 90 : (walking ? (step ? -15 : 15) : 0),
-                }}
-                style={{ originX: "18px", originY: "26px", transformOrigin: "18px 26px" }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-              >
-                <line x1="18" y1="26" x2="6" y2="39" stroke="#E91E63" strokeWidth="7" strokeLinecap="round" />
-                <circle cx="4" cy="41" r="5" fill="#fff" />
+              {/* LEFT ARM with coat sleeve */}
+              <motion.g style={{ transformOrigin: "18px 26px" }}>
+                <motion.line
+                  x1="18" y1="26"
+                  stroke="#E91E63"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  animate={{
+                    x2: bent ? 6 : up ? 8 : (walking ? (step ? 10 : 6) : 8),
+                    y2: bent ? 38 : up ? 2 : (walking ? (step ? 30 : 34) : 32),
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
+                {/* White mittens */}
+                <motion.circle
+                  r="5"
+                  fill="#fff"
+                  animate={{
+                    cx: bent ? 4 : up ? 6 : (walking ? (step ? 8 : 4) : 6),
+                    cy: bent ? 40 : up ? 0 : (walking ? (step ? 32 : 36) : 34),
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
               </motion.g>
 
-              {/* RIGHT ARM with coat sleeve - rotates from shoulder */}
-              <motion.g
-                animate={{
-                  rotate: bent ? 30 : (holding ? (dance ? -90 : 30) : (walking ? (step ? 15 : -15) : 0)),
-                }}
-                style={{ originX: "42px", originY: "26px", transformOrigin: "42px 26px" }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-              >
-                <line x1="42" y1="26" x2="54" y2="39" stroke="#E91E63" strokeWidth="7" strokeLinecap="round" />
-                <circle cx="56" cy="41" r="5" fill="#fff" />
+              {/* RIGHT ARM with coat sleeve */}
+              <motion.g style={{ transformOrigin: "42px 26px" }}>
+                <motion.line
+                  x1="42" y1="26"
+                  stroke="#E91E63"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  animate={{
+                    x2: bent ? 54 : (holding ? (dance ? 58 : 50) : (walking ? (step ? 50 : 54) : 52)),
+                    y2: bent ? 38 : (holding ? (dance ? 12 : 38) : (walking ? (step ? 34 : 30) : 32)),
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
+                {/* White mittens */}
+                <motion.circle
+                  r="5"
+                  fill="#fff"
+                  animate={{
+                    cx: bent ? 56 : (holding ? (dance ? 60 : 52) : (walking ? (step ? 52 : 56) : 54)),
+                    cy: bent ? 40 : (holding ? (dance ? 10 : 40) : (walking ? (step ? 36 : 32) : 34)),
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
               </motion.g>
 
               {/* Snow Pants */}
