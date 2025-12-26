@@ -187,7 +187,7 @@ export default function AnimatedAboutButton() {
 
   useEffect(() => {
     if (phase !== "holding") return;
-    const iv = setInterval(() => setHoldFrame(f => f + 1), 400);
+    const iv = setInterval(() => setHoldFrame(f => f + 1), 350);
     return () => clearInterval(iv);
   }, [phase]);
 
