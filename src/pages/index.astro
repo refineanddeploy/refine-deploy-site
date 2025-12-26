@@ -67,7 +67,7 @@ const services = [
 
 <BaseLayout title="Home">
   <!-- Hero Section - Clean Apple-style -->
-  <section class="relative min-h-[100svh] flex items-center overflow-hidden">
+  <section class="relative min-h-[100svh] flex items-center overflow-x-clip overflow-y-visible">
     <!-- Subtle gradient background -->
     <div class="absolute inset-0 bg-secondary"></div>
 
@@ -113,7 +113,7 @@ const services = [
         <!-- Hero Visual -->
         <div class="relative order-1 lg:order-2 w-full">
           <!-- Animated About Button - Walks across to position -->
-          <div class="absolute -top-2 sm:-top-4 right-4 sm:right-8 lg:top-2 lg:right-4 z-30 overflow-visible">
+          <div class="absolute -top-2 sm:-top-4 right-0 sm:right-4 lg:top-2 lg:right-0 z-30" style="overflow: visible;">
             <AnimatedAboutButton client:load />
           </div>
 
