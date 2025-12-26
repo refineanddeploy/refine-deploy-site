@@ -83,23 +83,18 @@ export default function AnimatedAboutButton() {
     };
   }, [initAudio, audioUnlocked]);
 
-  // Mario-style step - small boing
+  // Original footstep sound
   const playStep = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
-
-    const osc = ctx.createOscillator();
-    osc.type = "square";
-    osc.frequency.setValueAtTime(150, now);
-    osc.frequency.exponentialRampToValueAtTime(80, now + 0.06);
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.15, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.frequency.setValueAtTime(45, now);
+    osc.frequency.exponentialRampToValueAtTime(20, now + 0.08);
+    gain.gain.setValueAtTime(0.9, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
     osc.connect(gain).connect(ctx.destination);
     osc.start(now);
-    osc.stop(now + 0.1);
+    osc.stop(now + 0.15);
   }, [initAudio]);
 
   // Mario-style dig - brick break
@@ -145,27 +140,49 @@ export default function AnimatedAboutButton() {
     });
   }, [initAudio]);
 
-  // Mario-style celebrate - coin sound
+  // Fire starting sound - crackling with rising intensity
   const playCelebrate = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Classic coin sound - B5 then E6
-    const notes = [988, 1319]; // B5, E6
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      osc.type = "square";
-      osc.frequency.value = freq;
+    // Crackling fire noise
+    const bufSize = ctx.sampleRate * 1.2;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
 
-      const gain = ctx.createGain();
-      const startTime = now + i * 0.1;
-      gain.gain.setValueAtTime(0.15, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
+    for (let i = 0; i < bufSize; i++) {
+      const t = i / bufSize;
+      // Rising intensity envelope
+      const envelope = Math.pow(t, 0.5) * 0.4;
+      // Random crackles
+      const crackle = Math.random() > 0.97 ? (Math.random() * 2 - 1) * 3 : 0;
+      // Base fire noise
+      const noise = (Math.random() * 2 - 1) * envelope;
+      data[i] = noise + crackle * envelope;
+    }
 
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(startTime);
-      osc.stop(startTime + 0.2);
-    });
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+
+    // Low rumble filter
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.setValueAtTime(300, now);
+    lp.frequency.linearRampToValueAtTime(800, now + 1);
+
+    // Add some warmth
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 80;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.linearRampToValueAtTime(0.25, now + 0.6);
+    gain.gain.linearRampToValueAtTime(0.15, now + 1);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+    src.connect(hp).connect(lp).connect(gain).connect(ctx.destination);
+    src.start(now);
   }, [initAudio]);
 
   useEffect(() => {
