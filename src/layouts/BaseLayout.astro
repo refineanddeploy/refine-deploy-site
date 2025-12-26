@@ -25,7 +25,7 @@ const siteTitle = `${title} | Refine & Deploy`;
     <title>{siteTitle}</title>
 
     <!-- Theme color for mobile status bar -->
-    <meta name="theme-color" content="#ffffff" id="theme-color-meta" />
+    <meta name="theme-color" content="#fafafa" id="theme-color-meta" />
 
     <!-- Blocking theme script - prevents flash of wrong theme -->
     <script is:inline>
@@ -37,7 +37,7 @@ const siteTitle = `${title} | Refine & Deploy`;
         // Set status bar color based on theme
         const metaTheme = document.getElementById('theme-color-meta');
         if (metaTheme) {
-          metaTheme.content = theme === 'dark' ? '#111827' : '#ffffff';
+          metaTheme.content = theme === 'dark' ? '#111827' : '#fafafa';
         }
       })();
     </script>
