@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 
 type Phase = "walking" | "crouching" | "grabbing" | "lifting" | "holding";
 
+// Global singleton audio to prevent double playing
+let globalAudio: HTMLAudioElement | null = null;
+let globalAudioPlaying = false;
+
 export default function AnimatedAboutButton() {
   const [phase, setPhase] = useState<Phase | null>(null);
   const [stepCount, setStepCount] = useState(0);
@@ -14,7 +18,6 @@ export default function AnimatedAboutButton() {
   const [isDark, setIsDark] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const soundsPlayed = useRef({ sound: false });
-  const fireAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
@@ -65,22 +68,27 @@ export default function AnimatedAboutButton() {
     };
   }, [hasStarted]);
 
-  // Stop any playing audio
+  // Stop any playing audio (global singleton)
   const stopSound = useCallback(() => {
-    if (fireAudioRef.current) {
-      fireAudioRef.current.pause();
-      fireAudioRef.current.currentTime = 0;
-      fireAudioRef.current = null;
+    if (globalAudio) {
+      globalAudio.pause();
+      globalAudio.currentTime = 0;
+      globalAudio = null;
     }
+    globalAudioPlaying = false;
   }, []);
 
-  // Combined animation sound (footsteps + fire)
+  // Combined animation sound (footsteps + fire) - singleton
   const playAnimationSound = useCallback(() => {
+    // Prevent double playing from multiple component instances
+    if (globalAudioPlaying) return;
     stopSound();
+    globalAudioPlaying = true;
     const audio = new Audio('/sounds/animation.mp3');
     audio.volume = 0.5;
-    fireAudioRef.current = audio;
-    audio.play().catch(() => {});
+    globalAudio = audio;
+    audio.onended = () => { globalAudioPlaying = false; };
+    audio.play().catch(() => { globalAudioPlaying = false; });
   }, [stopSound]);
 
   useEffect(() => {
@@ -129,6 +137,7 @@ export default function AnimatedAboutButton() {
   const replay = useCallback(() => {
     // Stop current audio immediately
     stopSound();
+    globalAudioPlaying = false;
     if (audioRef.current) try { audioRef.current.close(); } catch {}
     audioRef.current = null;
     initAudio();
