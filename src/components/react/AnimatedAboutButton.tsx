@@ -3,499 +3,538 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 
-// Create LOUD footstep sound
-const playFootstepSound = (audioContext: AudioContext) => {
-  const oscillator = audioContext.createOscillator();
-  const gainNode = audioContext.createGain();
-  const filter = audioContext.createBiquadFilter();
-
-  oscillator.connect(filter);
-  filter.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-
-  oscillator.frequency.value = 100 + Math.random() * 50;
-  oscillator.type = "sine";
-  filter.type = "lowpass";
-  filter.frequency.value = 300;
-
+// Realistic footstep sound using layered noise
+const playRealisticFootstep = (audioContext: AudioContext) => {
   const now = audioContext.currentTime;
-  gainNode.gain.setValueAtTime(0, now);
-  gainNode.gain.linearRampToValueAtTime(0.6, now + 0.01); // Much louder
-  gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
 
-  oscillator.start(now);
-  oscillator.stop(now + 0.15);
+  // Layer 1: Low thump (heel strike)
+  const thump = audioContext.createOscillator();
+  const thumpGain = audioContext.createGain();
+  const thumpFilter = audioContext.createBiquadFilter();
+
+  thump.type = "sine";
+  thump.frequency.setValueAtTime(80, now);
+  thump.frequency.exponentialRampToValueAtTime(40, now + 0.1);
+
+  thumpFilter.type = "lowpass";
+  thumpFilter.frequency.value = 150;
+
+  thumpGain.gain.setValueAtTime(0, now);
+  thumpGain.gain.linearRampToValueAtTime(0.4, now + 0.01);
+  thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+  thump.connect(thumpFilter);
+  thumpFilter.connect(thumpGain);
+  thumpGain.connect(audioContext.destination);
+
+  thump.start(now);
+  thump.stop(now + 0.15);
+
+  // Layer 2: Mid click (sole contact)
+  const click = audioContext.createOscillator();
+  const clickGain = audioContext.createGain();
+  const clickFilter = audioContext.createBiquadFilter();
+
+  click.type = "triangle";
+  click.frequency.value = 200 + Math.random() * 100;
+
+  clickFilter.type = "bandpass";
+  clickFilter.frequency.value = 400;
+  clickFilter.Q.value = 2;
+
+  clickGain.gain.setValueAtTime(0, now + 0.01);
+  clickGain.gain.linearRampToValueAtTime(0.15, now + 0.02);
+  clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+  click.connect(clickFilter);
+  clickFilter.connect(clickGain);
+  clickGain.connect(audioContext.destination);
+
+  click.start(now + 0.01);
+  click.stop(now + 0.1);
+
+  // Layer 3: High texture (floor friction)
+  const bufferSize = audioContext.sampleRate * 0.05;
+  const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    output[i] = (Math.random() * 2 - 1) * 0.3;
+  }
+
+  const noise = audioContext.createBufferSource();
+  const noiseGain = audioContext.createGain();
+  const noiseFilter = audioContext.createBiquadFilter();
+
+  noise.buffer = noiseBuffer;
+  noiseFilter.type = "highpass";
+  noiseFilter.frequency.value = 2000;
+
+  noiseGain.gain.setValueAtTime(0, now + 0.015);
+  noiseGain.gain.linearRampToValueAtTime(0.08, now + 0.025);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(audioContext.destination);
+
+  noise.start(now + 0.015);
 };
 
 export default function AnimatedAboutButton() {
-  const [animationPhase, setAnimationPhase] = useState<"hidden" | "walking" | "dancing">("hidden");
-  const [stepCount, setStepCount] = useState(0);
-  const [danceCount, setDanceCount] = useState(0);
-  const [walkKey, setWalkKey] = useState(0);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const [phase, setPhase] = useState<"hidden" | "walking" | "celebrating">("hidden");
+  const [step, setStep] = useState(0);
+  const [celebrateFrame, setCelebrateFrame] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
+  const audioRef = useRef<AudioContext | null>(null);
 
-  const playFootstep = useCallback(() => {
+  const playStep = useCallback(() => {
     try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (!audioRef.current) {
+        audioRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
-      const ctx = audioContextRef.current;
-      if (ctx.state === "suspended") {
-        ctx.resume();
+      if (audioRef.current.state === "suspended") {
+        audioRef.current.resume();
       }
-      playFootstepSound(ctx);
-    } catch {
-      // Audio not supported
-    }
+      playRealisticFootstep(audioRef.current);
+    } catch {}
   }, []);
 
-  // Start walking on mount (every page load)
+  // Start on mount
   useEffect(() => {
     const timer = setTimeout(() => {
-      setAnimationPhase("walking");
-      setStepCount(0);
-    }, 800);
-
+      setPhase("walking");
+      setStep(0);
+    }, 600);
     return () => clearTimeout(timer);
-  }, []);
+  }, [animKey]);
 
-  // Walking step counter and sound effect
+  // Walking footsteps
   useEffect(() => {
-    if (animationPhase !== "walking") return;
+    if (phase !== "walking") return;
 
-    const stepInterval = setInterval(() => {
-      setStepCount(prev => {
-        playFootstep();
-        return prev + 1;
+    const interval = setInterval(() => {
+      setStep(s => {
+        playStep();
+        return s + 1;
       });
-    }, 280);
+    }, 320);
 
-    // Stop walking after 4 seconds, start dancing
     const stopTimer = setTimeout(() => {
-      clearInterval(stepInterval);
-      setAnimationPhase("dancing");
-    }, 4000);
+      clearInterval(interval);
+      setPhase("celebrating");
+    }, 3500);
 
     return () => {
-      clearInterval(stepInterval);
+      clearInterval(interval);
       clearTimeout(stopTimer);
     };
-  }, [animationPhase, playFootstep]);
+  }, [phase, playStep]);
 
-  // Dancing animation counter (keeps going forever)
+  // Celebration animation
   useEffect(() => {
-    if (animationPhase !== "dancing") return;
+    if (phase !== "celebrating") return;
+    const interval = setInterval(() => {
+      setCelebrateFrame(f => f + 1);
+    }, 500);
+    return () => clearInterval(interval);
+  }, [phase]);
 
-    const danceInterval = setInterval(() => {
-      setDanceCount(prev => prev + 1);
-    }, 400);
-
-    return () => clearInterval(danceInterval);
-  }, [animationPhase]);
-
-  const handleReplay = () => {
-    setWalkKey(prev => prev + 1);
-    setAnimationPhase("walking");
-    setStepCount(0);
-    setDanceCount(0);
+  const replay = () => {
+    setAnimKey(k => k + 1);
+    setPhase("walking");
+    setStep(0);
+    setCelebrateFrame(0);
   };
 
-  const isWalking = animationPhase === "walking";
-  const isDancing = animationPhase === "dancing";
-  const leftLegForward = stepCount % 2 === 0;
-  const danceLeft = danceCount % 2 === 0;
+  if (phase === "hidden") return null;
 
-  if (animationPhase === "hidden") return null;
+  const isWalking = phase === "walking";
+  const isCelebrating = phase === "celebrating";
+  const leftFoot = step % 2 === 0;
+  const celebrateLeft = celebrateFrame % 2 === 0;
 
   return (
-    <div className="fixed top-24 sm:top-28 lg:top-32 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
-      {/* Main walking/dancing group */}
-      <motion.div
-        key={walkKey}
-        className="flex items-end justify-center"
-        initial={{ x: "-100vw" }}
-        animate={{ x: 0 }}
-        transition={{
-          duration: isWalking ? 4 : 0,
-          ease: "linear"
-        }}
-      >
-        {/* Left Person (Male) */}
+    <div className="fixed top-20 sm:top-24 lg:top-28 left-1/2 -translate-x-1/2 z-50">
+      <div className="flex items-center gap-3">
+        {/* Main group */}
         <motion.div
-          className="relative z-10 flex-shrink-0"
-          animate={
-            isWalking
-              ? { y: [0, -4, 0], rotate: 0 }
-              : isDancing
-                ? { y: [0, -8, 0], rotate: danceLeft ? -5 : 5 }
-                : { y: 0 }
-          }
+          key={animKey}
+          className="flex flex-col items-center"
+          initial={{ x: "-50vw", opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
           transition={{
-            duration: isDancing ? 0.4 : 0.28,
-            repeat: (isWalking || isDancing) ? Infinity : 0,
-            ease: "easeInOut"
+            x: { duration: isWalking ? 3.5 : 0, ease: [0.25, 0.46, 0.45, 0.94] },
+            opacity: { duration: 0.4 }
           }}
         >
-          <svg
-            viewBox="0 0 40 90"
-            fill="none"
-            className="w-10 h-20 sm:w-12 sm:h-24 lg:w-14 lg:h-28"
+          {/* Sign ABOVE the people */}
+          <motion.a
+            href="/about"
+            className="relative z-20 mb-1"
+            animate={
+              isWalking
+                ? { y: [0, -3, 0], rotate: [-2, 2, -2] }
+                : isCelebrating
+                  ? { y: [0, -6, 0], rotate: [-3, 3, -3], scale: [1, 1.02, 1] }
+                  : {}
+            }
+            transition={{
+              duration: isCelebrating ? 0.5 : 0.32,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            whileHover={{ scale: 1.08, y: -4 }}
+            whileTap={{ scale: 0.96 }}
           >
-            {/* Head */}
-            <circle cx="20" cy="12" r="7" fill="#FDBF9C" />
-            {/* Hair */}
-            <path
-              d="M13 10C13 6 16 3 20 3C24 3 27 6 27 10C27 8 24 6 20 6C16 6 13 8 13 10Z"
-              fill="#3D2314"
-            />
-            {/* Body */}
-            <path
-              d="M10 22C10 19 14 17 20 17C26 17 30 19 30 22L31 50H9L10 22Z"
-              style={{ fill: "rgb(var(--color-accent))" }}
-            />
+            <div
+              className="px-5 py-2.5 sm:px-7 sm:py-3 lg:px-9 lg:py-4 rounded-full
+                         font-bold text-sm sm:text-base lg:text-lg
+                         whitespace-nowrap cursor-pointer
+                         border-2 border-white/20 backdrop-blur-sm"
+              style={{
+                background: "rgb(var(--color-accent))",
+                color: "#ffffff",
+                boxShadow: `
+                  0 8px 32px -8px rgba(var(--color-accent), 0.5),
+                  0 4px 12px rgba(0,0,0,0.15),
+                  inset 0 1px 0 rgba(255,255,255,0.2)
+                `,
+              }}
+            >
+              More About Us
+            </div>
+          </motion.a>
 
-            {/* Arms - up when dancing, one up when walking */}
-            <motion.path
-              style={{ fill: "rgb(var(--color-accent))" }}
-              animate={{
-                d: isDancing
-                  ? danceLeft
-                    ? "M9 24L2 8L5 6L12 22Z"
-                    : "M9 24L0 12L3 10L12 22Z"
-                  : "M9 24L4 14L7 12L12 22Z"
+          {/* People holding sign up */}
+          <div className="flex items-end justify-center -mt-1">
+            {/* Left Person (Male) */}
+            <motion.div
+              className="relative"
+              animate={
+                isWalking
+                  ? { y: [0, -2, 0] }
+                  : isCelebrating
+                    ? { y: [0, -4, 0], rotate: celebrateLeft ? -3 : 3 }
+                    : {}
+              }
+              transition={{
+                duration: isCelebrating ? 0.5 : 0.32,
+                repeat: Infinity,
+                ease: "easeInOut"
               }}
-              transition={{ duration: 0.2 }}
-            />
-            <motion.circle
-              fill="#FDBF9C"
-              r="3.5"
-              animate={{
-                cx: isDancing ? (danceLeft ? 3 : 1) : 5,
-                cy: isDancing ? (danceLeft ? 6 : 10) : 12
-              }}
-              transition={{ duration: 0.2 }}
-            />
+            >
+              <svg viewBox="0 0 50 100" className="w-10 h-20 sm:w-12 sm:h-24 lg:w-14 lg:h-28">
+                {/* Arms reaching UP to hold sign */}
+                <motion.path
+                  style={{ fill: "rgb(var(--color-accent))" }}
+                  animate={{
+                    d: isCelebrating
+                      ? celebrateLeft
+                        ? "M12 28L8 8L12 6L16 26Z"
+                        : "M12 28L6 10L10 8L16 26Z"
+                      : "M12 28L10 10L14 8L16 26Z"
+                  }}
+                  transition={{ duration: 0.25 }}
+                />
+                <motion.circle
+                  fill="#FDBF9C"
+                  r="4"
+                  animate={{
+                    cx: isCelebrating ? (celebrateLeft ? 9 : 7) : 11,
+                    cy: isCelebrating ? (celebrateLeft ? 5 : 7) : 7
+                  }}
+                  transition={{ duration: 0.25 }}
+                />
 
-            <motion.path
-              style={{ fill: "rgb(var(--color-accent))" }}
-              animate={{
-                d: isDancing
-                  ? danceLeft
-                    ? "M31 24L40 12L37 10L28 22Z"
-                    : "M31 24L38 8L35 6L28 22Z"
-                  : "M31 24L35 42L32 43L28 25Z"
-              }}
-              transition={{ duration: 0.2 }}
-            />
-            <motion.circle
-              fill="#FDBF9C"
-              r="3"
-              animate={{
-                cx: isDancing ? (danceLeft ? 39 : 37) : 34,
-                cy: isDancing ? (danceLeft ? 10 : 6) : 44
-              }}
-              transition={{ duration: 0.2 }}
-            />
+                <motion.path
+                  style={{ fill: "rgb(var(--color-accent))" }}
+                  animate={{
+                    d: isCelebrating
+                      ? celebrateLeft
+                        ? "M38 28L44 10L40 8L34 26Z"
+                        : "M38 28L42 8L38 6L34 26Z"
+                      : "M38 28L40 10L36 8L34 26Z"
+                  }}
+                  transition={{ duration: 0.25 }}
+                />
+                <motion.circle
+                  fill="#FDBF9C"
+                  r="4"
+                  animate={{
+                    cx: isCelebrating ? (celebrateLeft ? 43 : 41) : 39,
+                    cy: isCelebrating ? (celebrateLeft ? 7 : 5) : 7
+                  }}
+                  transition={{ duration: 0.25 }}
+                />
 
-            {/* Legs */}
-            <motion.path
-              fill="#2D3748"
-              animate={{
-                d: isWalking
-                  ? leftLegForward
-                    ? "M12 50L5 80L13 80L18 50Z"
-                    : "M12 50L19 80L27 80L18 50Z"
-                  : isDancing
-                    ? danceLeft
-                      ? "M12 50L6 80L14 80L18 50Z"
-                      : "M12 50L18 80L26 80L18 50Z"
-                    : "M12 50L10 80L18 80L16 50Z"
-              }}
-              transition={{ duration: 0.14, ease: "easeInOut" }}
-            />
-            <motion.path
-              fill="#2D3748"
-              animate={{
-                d: isWalking
-                  ? leftLegForward
-                    ? "M22 50L29 80L37 80L28 50Z"
-                    : "M22 50L15 80L23 80L22 50Z"
-                  : isDancing
-                    ? danceLeft
-                      ? "M22 50L28 80L36 80L28 50Z"
-                      : "M22 50L16 80L24 80L22 50Z"
-                    : "M22 50L24 80L32 80L26 50Z"
-              }}
-              transition={{ duration: 0.14, ease: "easeInOut" }}
-            />
+                {/* Head */}
+                <circle cx="25" cy="22" r="8" fill="#FDBF9C" />
+                {/* Hair */}
+                <path d="M17 20c0-5 4-9 8-9s8 4 8 9c0-2-4-5-8-5s-8 3-8 5z" fill="#4A3728" />
+                {/* Eyes */}
+                <circle cx="22" cy="22" r="1.5" fill="#2D3748" />
+                <circle cx="28" cy="22" r="1.5" fill="#2D3748" />
+                {/* Smile */}
+                <path d="M22 26c1.5 2 4.5 2 6 0" stroke="#2D3748" strokeWidth="1.5" fill="none" strokeLinecap="round" />
 
-            {/* Shoes */}
-            <motion.ellipse
-              cy="82"
-              rx="6"
-              ry="2.5"
-              fill="#1A202C"
-              animate={{
-                cx: isWalking
-                  ? (leftLegForward ? 9 : 23)
-                  : isDancing
-                    ? (danceLeft ? 10 : 22)
-                    : 14
+                {/* Body */}
+                <path
+                  d="M15 32c0-3 4-5 10-5s10 2 10 5l1 28h-22l1-28z"
+                  style={{ fill: "rgb(var(--color-accent))" }}
+                />
+
+                {/* Legs with realistic walking */}
+                <motion.path
+                  fill="#3D4852"
+                  animate={{
+                    d: isWalking
+                      ? leftFoot
+                        ? "M18 60l-8 32h10l6-32z"
+                        : "M18 60l4 32h10l-6-32z"
+                      : isCelebrating
+                        ? celebrateLeft
+                          ? "M18 60l-4 32h10l2-32z"
+                          : "M18 60l4 32h-2l2-32z"
+                        : "M18 60l0 32h10l-2-32z"
+                  }}
+                  transition={{ duration: 0.16, ease: "easeInOut" }}
+                />
+                <motion.path
+                  fill="#3D4852"
+                  animate={{
+                    d: isWalking
+                      ? leftFoot
+                        ? "M32 60l8 32h-10l-6-32z"
+                        : "M32 60l-4 32h-10l6-32z"
+                      : isCelebrating
+                        ? celebrateLeft
+                          ? "M32 60l4 32h-10l-2-32z"
+                          : "M32 60l-4 32h2l-2-32z"
+                        : "M32 60l0 32h-10l2-32z"
+                  }}
+                  transition={{ duration: 0.16, ease: "easeInOut" }}
+                />
+
+                {/* Shoes */}
+                <motion.ellipse
+                  fill="#1A202C"
+                  ry="3"
+                  rx="7"
+                  animate={{
+                    cx: isWalking ? (leftFoot ? 12 : 24) : isCelebrating ? (celebrateLeft ? 16 : 18) : 18,
+                    cy: 94
+                  }}
+                  transition={{ duration: 0.16 }}
+                />
+                <motion.ellipse
+                  fill="#1A202C"
+                  ry="3"
+                  rx="7"
+                  animate={{
+                    cx: isWalking ? (leftFoot ? 38 : 26) : isCelebrating ? (celebrateLeft ? 34 : 32) : 32,
+                    cy: 94
+                  }}
+                  transition={{ duration: 0.16 }}
+                />
+              </svg>
+            </motion.div>
+
+            {/* Right Person (Female) */}
+            <motion.div
+              className="relative -ml-3"
+              animate={
+                isWalking
+                  ? { y: [0, -2, 0] }
+                  : isCelebrating
+                    ? { y: [0, -4, 0], rotate: celebrateLeft ? 3 : -3 }
+                    : {}
+              }
+              transition={{
+                duration: isCelebrating ? 0.5 : 0.32,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.16
               }}
-              transition={{ duration: 0.14 }}
-            />
-            <motion.ellipse
-              cy="82"
-              rx="6"
-              ry="2.5"
-              fill="#1A202C"
-              animate={{
-                cx: isWalking
-                  ? (leftLegForward ? 33 : 19)
-                  : isDancing
-                    ? (danceLeft ? 32 : 20)
-                    : 28
-              }}
-              transition={{ duration: 0.14 }}
-            />
-          </svg>
+            >
+              <svg viewBox="0 0 50 100" className="w-10 h-20 sm:w-12 sm:h-24 lg:w-14 lg:h-28">
+                {/* Arms reaching UP */}
+                <motion.path
+                  fill="#DB2777"
+                  animate={{
+                    d: isCelebrating
+                      ? celebrateLeft
+                        ? "M12 28L6 10L10 8L16 26Z"
+                        : "M12 28L8 8L12 6L16 26Z"
+                      : "M12 28L10 10L14 8L16 26Z"
+                  }}
+                  transition={{ duration: 0.25 }}
+                />
+                <motion.circle
+                  fill="#E8C4A0"
+                  r="3.5"
+                  animate={{
+                    cx: isCelebrating ? (celebrateLeft ? 7 : 9) : 11,
+                    cy: isCelebrating ? (celebrateLeft ? 7 : 5) : 7
+                  }}
+                  transition={{ duration: 0.25 }}
+                />
+
+                <motion.path
+                  fill="#DB2777"
+                  animate={{
+                    d: isCelebrating
+                      ? celebrateLeft
+                        ? "M38 28L42 8L38 6L34 26Z"
+                        : "M38 28L44 10L40 8L34 26Z"
+                      : "M38 28L40 10L36 8L34 26Z"
+                  }}
+                  transition={{ duration: 0.25 }}
+                />
+                <motion.circle
+                  fill="#E8C4A0"
+                  r="3.5"
+                  animate={{
+                    cx: isCelebrating ? (celebrateLeft ? 41 : 43) : 39,
+                    cy: isCelebrating ? (celebrateLeft ? 5 : 7) : 7
+                  }}
+                  transition={{ duration: 0.25 }}
+                />
+
+                {/* Head */}
+                <circle cx="25" cy="22" r="7.5" fill="#E8C4A0" />
+                {/* Hair */}
+                <ellipse cx="25" cy="16" rx="8" ry="5" fill="#1A1A1A" />
+                <path d="M17 18c-1 8-1 14 1 22l-5-8 4-14z" fill="#1A1A1A" />
+                <path d="M33 18c1 8 1 14-1 22l5-8-4-14z" fill="#1A1A1A" />
+                {/* Earrings */}
+                <circle cx="17" cy="24" r="2" fill="#F59E0B" />
+                <circle cx="33" cy="24" r="2" fill="#F59E0B" />
+                {/* Eyes */}
+                <circle cx="22" cy="22" r="1.5" fill="#2D3748" />
+                <circle cx="28" cy="22" r="1.5" fill="#2D3748" />
+                {/* Smile */}
+                <path d="M22 26c1.5 2 4.5 2 6 0" stroke="#2D3748" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+
+                {/* Body */}
+                <path d="M15 32c0-3 4-5 10-5s10 2 10 5l1 24h-22l1-24z" fill="#DB2777" />
+                {/* Skirt */}
+                <path d="M14 56l-4 16h30l-4-16z" fill="#4B5563" />
+
+                {/* Legs */}
+                <motion.path
+                  fill="#E8C4A0"
+                  animate={{
+                    d: isWalking
+                      ? leftFoot
+                        ? "M18 72l-6 20h8l4-20z"
+                        : "M18 72l4 20h8l-6-20z"
+                      : isCelebrating
+                        ? celebrateLeft
+                          ? "M18 72l-3 20h8l1-20z"
+                          : "M18 72l3 20h-2l1-20z"
+                        : "M18 72l0 20h8l-2-20z"
+                  }}
+                  transition={{ duration: 0.16, ease: "easeInOut" }}
+                />
+                <motion.path
+                  fill="#E8C4A0"
+                  animate={{
+                    d: isWalking
+                      ? leftFoot
+                        ? "M32 72l6 20h-8l-4-20z"
+                        : "M32 72l-4 20h-8l6-20z"
+                      : isCelebrating
+                        ? celebrateLeft
+                          ? "M32 72l3 20h-8l-1-20z"
+                          : "M32 72l-3 20h2l-1-20z"
+                        : "M32 72l0 20h-8l2-20z"
+                  }}
+                  transition={{ duration: 0.16, ease: "easeInOut" }}
+                />
+
+                {/* Heels */}
+                <motion.path
+                  fill="#DB2777"
+                  animate={{
+                    d: isWalking
+                      ? leftFoot
+                        ? "M10 92h10l-1 6h-8z"
+                        : "M20 92h10l-1 6h-8z"
+                      : isCelebrating
+                        ? celebrateLeft
+                          ? "M13 92h10l-1 6h-8z"
+                          : "M17 92h10l-1 6h-8z"
+                        : "M16 92h10l-1 6h-8z"
+                  }}
+                  transition={{ duration: 0.16 }}
+                />
+                <motion.path
+                  fill="#DB2777"
+                  animate={{
+                    d: isWalking
+                      ? leftFoot
+                        ? "M36 92h10l-1 6h-8z"
+                        : "M26 92h10l-1 6h-8z"
+                      : isCelebrating
+                        ? celebrateLeft
+                          ? "M33 92h10l-1 6h-8z"
+                          : "M29 92h10l-1 6h-8z"
+                        : "M30 92h10l-1 6h-8z"
+                  }}
+                  transition={{ duration: 0.16 }}
+                />
+              </svg>
+            </motion.div>
+          </div>
         </motion.div>
 
-        {/* The Button/Sign being held */}
-        <motion.a
-          href="/about"
-          className="relative z-20 -mx-6 flex-shrink-0"
-          animate={
-            isWalking
-              ? { y: [0, -5, 0], rotate: [-12, -8, -12], marginTop: "-20px" }
-              : isDancing
-                ? { y: [-40, -48, -40], rotate: [0, -3, 0, 3, 0], marginTop: "-20px" }
-                : { y: -40, rotate: 0, marginTop: "-20px" }
-          }
-          transition={{
-            duration: isDancing ? 0.8 : 0.28,
-            repeat: (isWalking || isDancing) ? Infinity : 0,
-            ease: "easeInOut"
-          }}
-          whileHover={{
-            scale: 1.1,
-            transition: { duration: 0.2 }
-          }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <div
-            className="px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 rounded-full
-                       font-bold text-sm sm:text-base lg:text-lg
-                       whitespace-nowrap cursor-pointer
-                       border-2 border-white/30"
+        {/* Replay button - on the SIDE */}
+        {isCelebrating && (
+          <motion.button
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            onClick={replay}
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full
+                       transition-all hover:scale-105 active:scale-95 self-center"
             style={{
-              background: "rgb(var(--color-accent))",
-              color: "#ffffff",
-              boxShadow: `
-                0 15px 50px -10px rgba(var(--color-accent), 0.6),
-                0 5px 15px rgba(0,0,0,0.2),
-                inset 0 2px 0 rgba(255,255,255,0.25)
-              `,
+              background: "rgba(var(--color-bg-tertiary), 0.9)",
+              color: "rgb(var(--color-text-secondary))",
+              border: "1px solid rgba(var(--color-border), 0.3)",
+              backdropFilter: "blur(8px)"
             }}
           >
-            More About Us
-          </div>
-        </motion.a>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+            >
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+              <path d="M8 16H3v5" />
+            </svg>
+            <span className="text-xs sm:text-sm font-medium whitespace-nowrap">Watch again</span>
+          </motion.button>
+        )}
+      </div>
 
-        {/* Right Person (Female) */}
-        <motion.div
-          className="relative z-10 flex-shrink-0"
-          animate={
-            isWalking
-              ? { y: [0, -4, 0], rotate: 0 }
-              : isDancing
-                ? { y: [0, -8, 0], rotate: danceLeft ? 5 : -5 }
-                : { y: 0 }
-          }
-          transition={{
-            duration: isDancing ? 0.4 : 0.28,
-            repeat: (isWalking || isDancing) ? Infinity : 0,
-            ease: "easeInOut",
-            delay: 0.14
-          }}
-        >
-          <svg
-            viewBox="0 0 40 90"
-            fill="none"
-            className="w-10 h-20 sm:w-12 sm:h-24 lg:w-14 lg:h-28"
-          >
-            {/* Head */}
-            <circle cx="20" cy="12" r="6.5" fill="#E8C4A0" />
-            {/* Hair */}
-            <path d="M13 10C13 5 16 2 20 2C24 2 27 5 27 10C27 8 24 7 20 7C16 7 13 8 13 10Z" fill="#1A1A1A" />
-            <ellipse cx="20" cy="5" rx="5" ry="3" fill="#1A1A1A" />
-            <path d="M13 10C12 17 12 24 14 30L9 24L13 10Z" fill="#1A1A1A" />
-            <path d="M27 10C28 17 28 24 26 30L31 24L27 10Z" fill="#1A1A1A" />
-            {/* Earrings */}
-            <circle cx="13" cy="14" r="1.5" fill="#F59E0B" />
-            <circle cx="27" cy="14" r="1.5" fill="#F59E0B" />
-            {/* Body */}
-            <path d="M10 21C10 18 14 16 20 16C26 16 30 18 30 21L31 46H9L10 21Z" fill="#BE185D" />
-
-            {/* Arms - up when dancing */}
-            <motion.path
-              fill="#BE185D"
-              animate={{
-                d: isDancing
-                  ? danceLeft
-                    ? "M9 23L0 12L3 10L12 21Z"
-                    : "M9 23L2 8L5 6L12 21Z"
-                  : "M9 23L5 41L8 42L12 24Z"
-              }}
-              transition={{ duration: 0.2 }}
-            />
-            <motion.circle
-              fill="#E8C4A0"
-              r="2.5"
-              animate={{
-                cx: isDancing ? (danceLeft ? 1 : 3) : 6,
-                cy: isDancing ? (danceLeft ? 10 : 6) : 43
-              }}
-              transition={{ duration: 0.2 }}
-            />
-
-            <motion.path
-              fill="#BE185D"
-              animate={{
-                d: isDancing
-                  ? danceLeft
-                    ? "M31 23L38 8L35 6L28 21Z"
-                    : "M31 23L40 12L37 10L28 21Z"
-                  : "M31 23L36 13L33 11L28 21Z"
-              }}
-              transition={{ duration: 0.2 }}
-            />
-            <motion.circle
-              fill="#E8C4A0"
-              r="3"
-              animate={{
-                cx: isDancing ? (danceLeft ? 37 : 39) : 35,
-                cy: isDancing ? (danceLeft ? 6 : 10) : 11
-              }}
-              transition={{ duration: 0.2 }}
-            />
-
-            {/* Skirt */}
-            <path d="M9 46L5 62H35L31 46H9Z" fill="#374151" />
-
-            {/* Legs */}
-            <motion.path
-              fill="#E8C4A0"
-              animate={{
-                d: isWalking
-                  ? leftLegForward
-                    ? "M12 62L6 78L12 78L15 62Z"
-                    : "M12 62L18 78L24 78L17 62Z"
-                  : isDancing
-                    ? danceLeft
-                      ? "M12 62L7 78L13 78L15 62Z"
-                      : "M12 62L17 78L23 78L17 62Z"
-                    : "M12 62L10 78L16 78L14 62Z"
-              }}
-              transition={{ duration: 0.14, ease: "easeInOut" }}
-            />
-            <motion.path
-              fill="#E8C4A0"
-              animate={{
-                d: isWalking
-                  ? leftLegForward
-                    ? "M25 62L31 78L37 78L29 62Z"
-                    : "M25 62L19 78L25 78L25 62Z"
-                  : isDancing
-                    ? danceLeft
-                      ? "M25 62L30 78L36 78L29 62Z"
-                      : "M25 62L20 78L26 78L25 62Z"
-                    : "M25 62L27 78L33 78L28 62Z"
-              }}
-              transition={{ duration: 0.14, ease: "easeInOut" }}
-            />
-
-            {/* Heels */}
-            <motion.path
-              fill="#BE185D"
-              animate={{
-                d: isWalking
-                  ? leftLegForward
-                    ? "M5 78L13 78L12 83L6 83Z"
-                    : "M17 78L25 78L24 83L18 83Z"
-                  : isDancing
-                    ? danceLeft
-                      ? "M6 78L14 78L13 83L7 83Z"
-                      : "M16 78L24 78L23 83L17 83Z"
-                    : "M9 78L17 78L16 83L10 83Z"
-              }}
-              transition={{ duration: 0.14 }}
-            />
-            <motion.path
-              fill="#BE185D"
-              animate={{
-                d: isWalking
-                  ? leftLegForward
-                    ? "M30 78L38 78L37 83L31 83Z"
-                    : "M18 78L26 78L25 83L19 83Z"
-                  : isDancing
-                    ? danceLeft
-                      ? "M29 78L37 78L36 83L30 83Z"
-                      : "M19 78L27 78L26 83L20 83Z"
-                    : "M26 78L34 78L33 83L27 83Z"
-              }}
-              transition={{ duration: 0.14 }}
-            />
-          </svg>
-        </motion.div>
-      </motion.div>
-
-      {/* Replay button with text */}
-      {isDancing && (
-        <motion.button
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          onClick={handleReplay}
-          className="flex items-center gap-2 px-4 py-2 rounded-full transition-all hover:scale-105 active:scale-95"
-          style={{
-            background: "rgba(var(--color-accent), 0.1)",
-            color: "rgb(var(--color-accent))",
-            border: "1px solid rgba(var(--color-accent), 0.2)"
-          }}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-4 h-4"
-          >
-            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-            <path d="M21 3v5h-5" />
-            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-            <path d="M8 16H3v5" />
-          </svg>
-          <span className="text-sm font-medium">Watch again</span>
-        </motion.button>
-      )}
-
-      {/* Ground shadow */}
+      {/* Shadow underneath */}
       <motion.div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-3 rounded-full pointer-events-none"
+        className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
         style={{
-          width: "200px",
-          background: "rgba(var(--color-text-primary), 0.08)",
+          width: "120px",
+          height: "8px",
+          background: "rgba(var(--color-text-primary), 0.06)",
           filter: "blur(4px)"
         }}
-        initial={{ opacity: 0, scaleX: 0 }}
-        animate={{
-          opacity: isDancing ? 0.6 : 0.3,
-          scaleX: 1
-        }}
-        transition={{ duration: 0.4 }}
+        initial={{ opacity: 0, scaleX: 0.5 }}
+        animate={{ opacity: 0.6, scaleX: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
       />
     </div>
   );
