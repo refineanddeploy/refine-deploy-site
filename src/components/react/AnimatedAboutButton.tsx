@@ -83,74 +83,110 @@ export default function AnimatedAboutButton() {
     };
   }, [initAudio, audioUnlocked]);
 
+  // Soft footstep - gentle thud
   const playStep = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
-    const osc = ctx.createOscillator(), gain = ctx.createGain();
-    osc.frequency.setValueAtTime(45, now); osc.frequency.exponentialRampToValueAtTime(20, now + 0.08);
-    gain.gain.setValueAtTime(0.9, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-    osc.connect(gain).connect(ctx.destination); osc.start(now); osc.stop(now + 0.15);
+
+    // Very soft thump
+    const bufSize = ctx.sampleRate * 0.06;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.15));
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 150;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    src.connect(lp).connect(gain).connect(ctx.destination);
+    src.start(now);
   }, [initAudio]);
 
+  // Soft scrape sound
   const playDig = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
-    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.4, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (d.length * 0.25));
-    const src = ctx.createBufferSource(); src.buffer = buf;
-    const flt = ctx.createBiquadFilter(); flt.type = "bandpass"; flt.frequency.value = 350;
-    const gain = ctx.createGain(); gain.gain.setValueAtTime(0.8, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-    src.connect(flt).connect(gain).connect(ctx.destination); src.start(now);
+
+    const bufSize = ctx.sampleRate * 0.25;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+      const env = Math.exp(-i / (bufSize * 0.4));
+      data[i] = (Math.random() * 2 - 1) * env * 0.15;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 200;
+    bp.Q.value = 0.5;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    src.connect(bp).connect(gain).connect(ctx.destination);
+    src.start(now);
   }, [initAudio]);
 
+  // Gentle rising hum
   const playLift = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Soft whoosh sound - much more pleasant
-    const bufferSize = ctx.sampleRate * 0.5;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      const t = i / bufferSize;
-      const envelope = Math.sin(t * Math.PI) * 0.3; // Gentle fade in/out
-      data[i] = (Math.random() * 2 - 1) * envelope;
-    }
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const lowpass = ctx.createBiquadFilter();
-    lowpass.type = "lowpass";
-    lowpass.frequency.setValueAtTime(200, now);
-    lowpass.frequency.exponentialRampToValueAtTime(600, now + 0.4);
+    // Soft pad-like tone
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(80, now);
+    osc.frequency.linearRampToValueAtTime(120, now + 0.4);
 
     const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.linearRampToValueAtTime(0.15, now + 0.3);
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.08, now + 0.1);
+    gain.gain.linearRampToValueAtTime(0.05, now + 0.3);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
 
-    noise.connect(lowpass).connect(gain).connect(ctx.destination);
-    noise.start(now);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.5);
   }, [initAudio]);
 
+  // Soft shimmer - no chimes
   const playCelebrate = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
 
-    // Soft, pleasant chime - lower frequencies
-    [262, 330, 392, 523].forEach((f, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = f;
-      gain.gain.setValueAtTime(0, now + i * 0.15);
-      gain.gain.linearRampToValueAtTime(0.15, now + i * 0.15 + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.5);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(now + i * 0.15);
-      osc.stop(now + i * 0.15 + 0.55);
-    });
+    // Gentle sparkle using filtered noise
+    const bufSize = ctx.sampleRate * 0.8;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+      const t = i / bufSize;
+      // Shimmering envelope
+      const env = Math.sin(t * Math.PI) * (1 + 0.3 * Math.sin(t * 40));
+      data[i] = (Math.random() * 2 - 1) * env * 0.08;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 2000;
+
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 6000;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.linearRampToValueAtTime(0.1, now + 0.4);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+    src.connect(hp).connect(lp).connect(gain).connect(ctx.destination);
+    src.start(now);
   }, [initAudio]);
 
   useEffect(() => {
