@@ -41,15 +41,41 @@ export default function InteractivePhone({ projects }: Props) {
     return () => clearTimeout(timeout);
   }, [activeProject, isLoading]);
 
-  // Lock body scroll when fullscreen
+  // Lock body scroll when fullscreen and handle iOS status bar color
   useEffect(() => {
     if (isFullscreen) {
       document.body.style.overflow = "hidden";
+      // Set theme-color meta tag to black for iOS status bar
+      let metaTheme = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+      if (!metaTheme) {
+        metaTheme = document.createElement("meta");
+        metaTheme.name = "theme-color";
+        document.head.appendChild(metaTheme);
+      }
+      metaTheme.setAttribute("data-previous", metaTheme.content || "");
+      metaTheme.content = "#000000";
     } else {
       document.body.style.overflow = "";
+      // Restore previous theme-color
+      const metaTheme = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+      if (metaTheme) {
+        const previous = metaTheme.getAttribute("data-previous");
+        if (previous) {
+          metaTheme.content = previous;
+        } else {
+          metaTheme.remove();
+        }
+      }
     }
     return () => {
       document.body.style.overflow = "";
+      const metaTheme = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+      if (metaTheme) {
+        const previous = metaTheme.getAttribute("data-previous");
+        if (previous) {
+          metaTheme.content = previous;
+        }
+      }
     };
   }, [isFullscreen]);
 
@@ -332,61 +358,73 @@ export default function InteractivePhone({ projects }: Props) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[100]"
+            style={{
+              // Handle iOS safe area (notch/status bar)
+              paddingTop: "env(safe-area-inset-top)",
+              paddingBottom: "env(safe-area-inset-bottom)",
+              paddingLeft: "env(safe-area-inset-left)",
+              paddingRight: "env(safe-area-inset-right)",
+              background: "#000",
+            }}
           >
             {/* Backdrop with blur */}
             <div
               className="absolute inset-0"
               style={{
-                background: "rgba(0, 0, 0, 0.85)",
+                background: "rgba(0, 0, 0, 0.9)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
               }}
               onClick={() => setIsFullscreen(false)}
             />
 
-            {/* Content Container - Different layout for mobile/desktop */}
-            <div className="relative h-full flex flex-col">
-              {/* Header with close button */}
-              <div className="flex-shrink-0 flex items-center justify-between p-4 sm:p-6">
-                <div className="text-white">
-                  <p className="text-xs sm:text-sm font-medium opacity-60 uppercase tracking-wider">
-                    {currentProject.category}
-                  </p>
-                  <h3 className="text-lg sm:text-xl font-bold">
-                    {currentProject.title}
-                  </h3>
-                </div>
-                <motion.button
-                  onClick={() => setIsFullscreen(false)}
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center
-                             bg-white/10 hover:bg-white/20 transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </motion.button>
-              </div>
+            {/* Phone - TRUE center on all devices */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="pointer-events-auto"
+              >
+                <PhoneFrame isFullscreenMode />
+              </motion.div>
+            </div>
 
-              {/* Phone - Centered */}
-              <div className="flex-1 flex items-center justify-center px-4 pb-4 sm:pb-8">
-                <motion.div
-                  initial={{ scale: 0.9, y: 20 }}
-                  animate={{ scale: 1, y: 0 }}
-                  exit={{ scale: 0.9, y: 20 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                >
-                  <PhoneFrame isFullscreenMode />
-                </motion.div>
-              </div>
-
-              {/* Footer hint */}
-              <div className="flex-shrink-0 pb-4 sm:pb-6 text-center">
-                <p className="text-white/50 text-xs sm:text-sm">
-                  Tap outside or press × to close
+            {/* Header - Overlaid at top */}
+            <div
+              className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 sm:p-6 z-10"
+              style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
+            >
+              <div className="text-white">
+                <p className="text-xs sm:text-sm font-medium opacity-60 uppercase tracking-wider">
+                  {currentProject.category}
                 </p>
+                <h3 className="text-lg sm:text-xl font-bold">
+                  {currentProject.title}
+                </h3>
               </div>
+              <motion.button
+                onClick={() => setIsFullscreen(false)}
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center
+                           bg-white/10 hover:bg-white/20 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </motion.button>
+            </div>
+
+            {/* Footer hint - Overlaid at bottom */}
+            <div
+              className="absolute bottom-0 left-0 right-0 pb-4 sm:pb-6 text-center z-10"
+              style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
+            >
+              <p className="text-white/50 text-xs sm:text-sm">
+                Tap outside or press × to close
+              </p>
             </div>
           </motion.div>
         )}
