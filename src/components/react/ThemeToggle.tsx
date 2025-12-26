@@ -310,12 +310,12 @@ export default function ThemeToggle({ variant = "default" }: Props) {
         </motion.div>
       </motion.button>
 
-      {/* Pull String - Hanging from right side of button */}
+      {/* Pull String - Hanging from bottom of button */}
       <div
         className="absolute cursor-pointer select-none"
         style={{
           right: isCompact ? 8 : 10,
-          top: trackHeight - 2,
+          top: trackHeight,
           width: ballSize + 4,
           height: stringLength + ballSize + 30,
         }}
