@@ -82,6 +82,11 @@ const services = [
     </div>
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <!-- Desktop only: Animated About Button - centered above content -->
+      <div class="hidden lg:block relative h-32 mb-4">
+        <AnimatedAboutButton client:load />
+      </div>
+
       <!-- Mobile-first: Stack vertically, then grid on desktop -->
       <div class="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
@@ -112,8 +117,10 @@ const services = [
 
         <!-- Hero Visual -->
         <div class="relative order-1 lg:order-2 w-full">
-          <!-- Animated About Button - Fixed positioned, walks to center -->
-          <AnimatedAboutButton client:load />
+          <!-- Mobile only: Animated About Button -->
+          <div class="lg:hidden">
+            <AnimatedAboutButton client:load />
+          </div>
 
           <!-- Mobile: Preview cards with mockups -->
           <div class="lg:hidden w-full max-w-md mx-auto pt-16 sm:pt-20">
