@@ -399,7 +399,7 @@ export default function AnimatedAboutButton() {
                 transition={{ duration: 0.5 }}
                 style={{ width: 50, height: 55 }}
               >
-                {/* Large ambient light - illuminates the whole area (bigger & brighter in dark mode) */}
+                {/* Large ambient light - teal glow (bigger & brighter in dark mode) */}
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
                   style={{
@@ -407,8 +407,8 @@ export default function AnimatedAboutButton() {
                     height: isDark ? 280 : 200,
                     bottom: isDark ? -80 : -60,
                     background: isDark
-                      ? "radial-gradient(ellipse, rgba(255,160,60,0.55) 0%, rgba(255,120,40,0.3) 25%, rgba(255,80,20,0.12) 50%, transparent 70%)"
-                      : "radial-gradient(ellipse, rgba(255,150,50,0.35) 0%, rgba(255,100,30,0.15) 30%, rgba(255,80,20,0.05) 50%, transparent 70%)",
+                      ? "radial-gradient(ellipse, rgba(45,212,191,0.5) 0%, rgba(20,184,166,0.25) 25%, rgba(13,148,136,0.1) 50%, transparent 70%)"
+                      : "radial-gradient(ellipse, rgba(45,212,191,0.3) 0%, rgba(20,184,166,0.12) 30%, rgba(13,148,136,0.04) 50%, transparent 70%)",
                     filter: isDark ? "blur(25px)" : "blur(20px)",
                   }}
                   animate={{
@@ -418,7 +418,7 @@ export default function AnimatedAboutButton() {
                   transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                 />
 
-                {/* Core bright glow (brighter in dark mode) */}
+                {/* Core bright teal glow (brighter in dark mode) */}
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 rounded-full"
                   style={{
@@ -426,8 +426,8 @@ export default function AnimatedAboutButton() {
                     height: isDark ? 55 : 40,
                     bottom: isDark ? -8 : -5,
                     background: isDark
-                      ? "radial-gradient(ellipse, rgba(255,220,120,0.95) 0%, rgba(255,150,60,0.7) 40%, transparent 70%)"
-                      : "radial-gradient(ellipse, rgba(255,200,100,0.8) 0%, rgba(255,120,50,0.5) 40%, transparent 70%)",
+                      ? "radial-gradient(ellipse, rgba(94,234,212,0.9) 0%, rgba(45,212,191,0.6) 40%, transparent 70%)"
+                      : "radial-gradient(ellipse, rgba(94,234,212,0.7) 0%, rgba(45,212,191,0.4) 40%, transparent 70%)",
                     filter: isDark ? "blur(10px)" : "blur(8px)",
                   }}
                   animate={{
