@@ -126,6 +126,7 @@ export default function AnimatedAboutButton() {
   const holding = phase === "holding";
   const bent = crouching || grabbing;
   const up = lifting || holding;
+  const showFire = crouching || grabbing || lifting || holding;
   const step = stepCount % 2 === 0;
   const dance = holdFrame % 2 === 0;
 
@@ -374,6 +375,130 @@ export default function AnimatedAboutButton() {
               </motion.g>
             </motion.svg>
           </motion.div>
+
+          {/* Fire Animation */}
+          <AnimatePresence>
+            {showFire && (
+              <motion.div
+                className="absolute bottom-0 left-1/2 -translate-x-1/2"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{ duration: 0.5 }}
+              >
+                {/* Glow effect - works in both light and dark modes */}
+                <motion.div
+                  className="absolute left-1/2 -translate-x-1/2 rounded-full"
+                  style={{
+                    width: 60,
+                    height: 40,
+                    bottom: -5,
+                    background: "radial-gradient(ellipse, rgba(255,120,50,0.4) 0%, rgba(255,80,20,0.2) 40%, transparent 70%)",
+                    filter: "blur(8px)",
+                  }}
+                  animate={{
+                    opacity: [0.6, 0.9, 0.7, 0.85, 0.6],
+                    scale: [1, 1.1, 0.95, 1.05, 1],
+                  }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                />
+                {/* Fire SVG */}
+                <motion.svg
+                  viewBox="0 0 40 50"
+                  style={{ width: 30, height: 38 }}
+                  animate={{
+                    scaleX: [1, 1.05, 0.95, 1.02, 1],
+                    scaleY: [1, 1.08, 0.96, 1.04, 1],
+                  }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  {/* Outer flame - orange */}
+                  <motion.path
+                    d="M20 2 C20 2 8 18 8 30 C8 42 14 48 20 48 C26 48 32 42 32 30 C32 18 20 2 20 2"
+                    fill="url(#fireGradientOuter)"
+                    animate={{
+                      d: [
+                        "M20 2 C20 2 8 18 8 30 C8 42 14 48 20 48 C26 48 32 42 32 30 C32 18 20 2 20 2",
+                        "M20 4 C20 4 6 16 6 28 C6 40 13 48 20 48 C27 48 34 40 34 28 C34 16 20 4 20 4",
+                        "M20 3 C20 3 9 17 9 29 C9 41 14 48 20 48 C26 48 31 41 31 29 C31 17 20 3 20 3",
+                        "M20 2 C20 2 8 18 8 30 C8 42 14 48 20 48 C26 48 32 42 32 30 C32 18 20 2 20 2",
+                      ]
+                    }}
+                    transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  {/* Inner flame - yellow */}
+                  <motion.path
+                    d="M20 12 C20 12 14 22 14 32 C14 40 17 44 20 44 C23 44 26 40 26 32 C26 22 20 12 20 12"
+                    fill="url(#fireGradientInner)"
+                    animate={{
+                      d: [
+                        "M20 12 C20 12 14 22 14 32 C14 40 17 44 20 44 C23 44 26 40 26 32 C26 22 20 12 20 12",
+                        "M20 14 C20 14 12 20 12 30 C12 38 16 44 20 44 C24 44 28 38 28 30 C28 20 20 14 20 14",
+                        "M20 13 C20 13 15 21 15 31 C15 39 17 44 20 44 C23 44 25 39 25 31 C25 21 20 13 20 13",
+                        "M20 12 C20 12 14 22 14 32 C14 40 17 44 20 44 C23 44 26 40 26 32 C26 22 20 12 20 12",
+                      ]
+                    }}
+                    transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
+                  />
+                  {/* Core flame - white/light yellow */}
+                  <motion.ellipse
+                    cx="20"
+                    rx="4"
+                    fill="url(#fireGradientCore)"
+                    animate={{
+                      cy: [36, 34, 37, 35, 36],
+                      ry: [6, 8, 5, 7, 6],
+                    }}
+                    transition={{ duration: 0.4, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  {/* Gradients */}
+                  <defs>
+                    <linearGradient id="fireGradientOuter" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stopColor="#FF4500" />
+                      <stop offset="50%" stopColor="#FF6B35" />
+                      <stop offset="100%" stopColor="#FFA500" />
+                    </linearGradient>
+                    <linearGradient id="fireGradientInner" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stopColor="#FF8C00" />
+                      <stop offset="60%" stopColor="#FFD700" />
+                      <stop offset="100%" stopColor="#FFEC8B" />
+                    </linearGradient>
+                    <linearGradient id="fireGradientCore" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stopColor="#FFD700" />
+                      <stop offset="100%" stopColor="#FFFACD" />
+                    </linearGradient>
+                  </defs>
+                </motion.svg>
+                {/* Sparks */}
+                {holding && [...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                      width: 2,
+                      height: 2,
+                      background: "#FFD700",
+                      left: 12 + i * 4,
+                      bottom: 30,
+                      boxShadow: "0 0 4px 1px rgba(255, 200, 50, 0.6)",
+                    }}
+                    animate={{
+                      y: [-10, -25, -35],
+                      x: [0, (i - 1) * 8, (i - 1) * 12],
+                      opacity: [1, 0.8, 0],
+                      scale: [1, 0.8, 0.4],
+                    }}
+                    transition={{
+                      duration: 1.2,
+                      repeat: Infinity,
+                      delay: i * 0.4,
+                      ease: "easeOut",
+                    }}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Dirt particles */}
           {grabbing && (
