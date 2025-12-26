@@ -11,7 +11,7 @@ export default function AnimatedAboutButton() {
   const [holdFrame, setHoldFrame] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const audioRef = useRef<AudioContext | null>(null);
-  const soundsPlayed = useRef({ dig: false, lift: false, celebrate: false });
+  const soundsPlayed = useRef({ match: false, dig: false, lift: false, celebrate: false });
 
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
@@ -95,6 +95,76 @@ export default function AnimatedAboutButton() {
     osc.connect(gain).connect(ctx.destination);
     osc.start(now);
     osc.stop(now + 0.15);
+  }, [initAudio]);
+
+  // Realistic match strike sound
+  const playMatch = useCallback(() => {
+    const ctx = initAudio(); if (!ctx) return;
+    const now = ctx.currentTime;
+
+    // Part 1: Strike/scratch sound (0-0.15s)
+    const scratchBuf = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
+    const scratchData = scratchBuf.getChannelData(0);
+    for (let i = 0; i < scratchData.length; i++) {
+      const t = i / scratchData.length;
+      const env = Math.exp(-t * 8) * 0.6;
+      scratchData[i] = (Math.random() * 2 - 1) * env;
+    }
+    const scratchSrc = ctx.createBufferSource();
+    scratchSrc.buffer = scratchBuf;
+    const scratchBp = ctx.createBiquadFilter();
+    scratchBp.type = "bandpass";
+    scratchBp.frequency.value = 2500;
+    scratchBp.Q.value = 1;
+    const scratchGain = ctx.createGain();
+    scratchGain.gain.value = 0.4;
+    scratchSrc.connect(scratchBp).connect(scratchGain).connect(ctx.destination);
+    scratchSrc.start(now);
+
+    // Part 2: Ignition whoosh (0.1-0.4s)
+    const whooshBuf = ctx.createBuffer(1, ctx.sampleRate * 0.35, ctx.sampleRate);
+    const whooshData = whooshBuf.getChannelData(0);
+    for (let i = 0; i < whooshData.length; i++) {
+      const t = i / whooshData.length;
+      const env = Math.sin(t * Math.PI) * 0.5;
+      whooshData[i] = (Math.random() * 2 - 1) * env;
+    }
+    const whooshSrc = ctx.createBufferSource();
+    whooshSrc.buffer = whooshBuf;
+    const whooshLp = ctx.createBiquadFilter();
+    whooshLp.type = "lowpass";
+    whooshLp.frequency.setValueAtTime(400, now + 0.1);
+    whooshLp.frequency.linearRampToValueAtTime(1200, now + 0.3);
+    const whooshGain = ctx.createGain();
+    whooshGain.gain.setValueAtTime(0, now);
+    whooshGain.gain.linearRampToValueAtTime(0.35, now + 0.15);
+    whooshGain.gain.linearRampToValueAtTime(0.2, now + 0.4);
+    whooshSrc.connect(whooshLp).connect(whooshGain).connect(ctx.destination);
+    whooshSrc.start(now + 0.08);
+
+    // Part 3: Flame crackling (0.3s onwards)
+    const flameBuf = ctx.createBuffer(1, ctx.sampleRate * 1.5, ctx.sampleRate);
+    const flameData = flameBuf.getChannelData(0);
+    for (let i = 0; i < flameData.length; i++) {
+      const t = i / flameData.length;
+      const env = (1 - Math.exp(-t * 5)) * Math.exp(-t * 0.8) * 0.3;
+      const crackle = Math.random() > 0.98 ? (Math.random() * 2 - 1) * 2 : 0;
+      flameData[i] = ((Math.random() * 2 - 1) + crackle) * env;
+    }
+    const flameSrc = ctx.createBufferSource();
+    flameSrc.buffer = flameBuf;
+    const flameLp = ctx.createBiquadFilter();
+    flameLp.type = "lowpass";
+    flameLp.frequency.value = 600;
+    const flameHp = ctx.createBiquadFilter();
+    flameHp.type = "highpass";
+    flameHp.frequency.value = 100;
+    const flameGain = ctx.createGain();
+    flameGain.gain.setValueAtTime(0, now);
+    flameGain.gain.linearRampToValueAtTime(0.3, now + 0.5);
+    flameGain.gain.linearRampToValueAtTime(0.15, now + 1.5);
+    flameSrc.connect(flameHp).connect(flameLp).connect(flameGain).connect(ctx.destination);
+    flameSrc.start(now + 0.25);
   }, [initAudio]);
 
   // Mario-style dig - brick break
@@ -186,7 +256,7 @@ export default function AnimatedAboutButton() {
   }, [initAudio]);
 
   useEffect(() => {
-    soundsPlayed.current = { dig: false, lift: false, celebrate: false };
+    soundsPlayed.current = { match: false, dig: false, lift: false, celebrate: false };
     const t = setTimeout(() => { setPhase("walking"); setStepCount(0); }, 200);
     return () => clearTimeout(t);
   }, [animKey]);
@@ -201,9 +271,10 @@ export default function AnimatedAboutButton() {
 
   useEffect(() => {
     if (phase !== "crouching") return;
+    if (!soundsPlayed.current.match) { soundsPlayed.current.match = true; playMatch(); }
     const t = setTimeout(() => setPhase("grabbing"), 500);
     return () => clearTimeout(t);
-  }, [phase]);
+  }, [phase, playMatch]);
 
   useEffect(() => {
     if (phase !== "grabbing") return;
@@ -229,7 +300,7 @@ export default function AnimatedAboutButton() {
   const replay = useCallback(() => {
     if (audioRef.current) try { audioRef.current.close(); } catch {}
     audioRef.current = null; initAudio();
-    soundsPlayed.current = { dig: false, lift: false, celebrate: false };
+    soundsPlayed.current = { match: false, dig: false, lift: false, celebrate: false };
     setPhase(null); setStepCount(0); setHoldFrame(0); setAnimKey(k => k + 1);
   }, [initAudio]);
 
