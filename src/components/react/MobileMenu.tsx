@@ -14,6 +14,18 @@ interface Props {
 
 export default function MobileMenu({ navLinks }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  // Detect theme
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.getAttribute('data-theme') === 'dark');
+    };
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
 
   // Lock body scroll when menu is open
   useEffect(() => {
@@ -81,11 +93,10 @@ export default function MobileMenu({ navLinks }: Props) {
 
             {/* Slide-in Panel */}
             <motion.nav
-              className="fixed top-0 right-0 h-full w-[85vw] max-w-sm z-[58] shadow-2xl bg-primary"
+              className="fixed top-0 right-0 h-full w-[85vw] max-w-sm z-[58] shadow-2xl"
               style={{
-                backgroundColor: "rgb(var(--color-bg-primary))",
+                backgroundColor: isDark ? "#111827" : "#ffffff",
                 borderLeft: "1px solid rgba(var(--color-border), 0.2)",
-                opacity: 1
               }}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
