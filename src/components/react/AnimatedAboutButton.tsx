@@ -30,7 +30,9 @@ const playFootstepSound = (audioContext: AudioContext) => {
 export default function AnimatedAboutButton() {
   const [animationPhase, setAnimationPhase] = useState<"hidden" | "walking" | "arrived">("hidden");
   const [stepCount, setStepCount] = useState(0);
+  const [walkKey, setWalkKey] = useState(0); // Key to force re-animation on replay
   const audioContextRef = useRef<AudioContext | null>(null);
+  const alreadyPlayedRef = useRef(false);
 
   const playFootstep = useCallback(() => {
     try {
@@ -47,27 +49,24 @@ export default function AnimatedAboutButton() {
     }
   }, []);
 
-  const startWalkingAnimation = useCallback(() => {
-    setAnimationPhase("walking");
-    setStepCount(0);
-  }, []);
-
   // Initial mount - check if already animated
   useEffect(() => {
     const hasPlayed = sessionStorage.getItem("aboutWalkAnimated");
 
     if (hasPlayed) {
+      alreadyPlayedRef.current = true;
       setAnimationPhase("arrived");
       return;
     }
 
     // Start walking after page loads
     const timer = setTimeout(() => {
-      startWalkingAnimation();
+      setAnimationPhase("walking");
+      setStepCount(0);
     }, 800);
 
     return () => clearTimeout(timer);
-  }, [startWalkingAnimation]);
+  }, []);
 
   // Walking step counter and sound effect
   useEffect(() => {
@@ -96,30 +95,33 @@ export default function AnimatedAboutButton() {
 
   const handleReplay = () => {
     sessionStorage.removeItem("aboutWalkAnimated");
-    startWalkingAnimation();
+    alreadyPlayedRef.current = false;
+    setWalkKey(prev => prev + 1); // Force new animation
+    setAnimationPhase("walking");
+    setStepCount(0);
   };
 
   const isWalking = animationPhase === "walking";
   const leftLegForward = stepCount % 2 === 0;
+
+  // Skip initial animation if already played before
+  const shouldSkipInitialAnimation = alreadyPlayedRef.current && animationPhase === "arrived";
 
   // Don't render until ready
   if (animationPhase === "hidden") return null;
 
   return (
     <div className="relative flex items-end gap-2">
-      {/* Main walking group */}
+      {/* Main walking group - walks from LEFT to position */}
       <motion.div
+        key={walkKey}
         className="flex items-end"
-        initial={{ x: 800, opacity: 0 }}
-        animate={{
-          x: 0,
-          opacity: 1
-        }}
+        initial={shouldSkipInitialAnimation ? { x: 0 } : { x: -600 }}
+        animate={{ x: 0 }}
         transition={{
-          x: { duration: 4, ease: "linear" },
-          opacity: { duration: 0.3 }
+          duration: isWalking ? 4 : 0,
+          ease: "linear"
         }}
-        key={animationPhase === "walking" ? "walking" : "static"}
       >
         {/* Left Person (Male) - body bounces while walking */}
         <motion.div
