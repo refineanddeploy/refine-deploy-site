@@ -98,7 +98,7 @@ export default function AnimatedAboutButton() {
     osc.stop(now + 0.15);
   }, [initAudio]);
 
-  // Fire sound from mp3 - play first half only
+  // Fire sounds from mp3 - play fire1 then fire2
   const playFire = useCallback(() => {
     // Stop any existing fire audio
     if (fireAudioRef.current) {
@@ -106,21 +106,19 @@ export default function AnimatedAboutButton() {
       fireAudioRef.current = null;
     }
 
-    const audio = new Audio('/sounds/fire.mp3');
-    audio.volume = 0.6;
-    fireAudioRef.current = audio;
+    const audio1 = new Audio('/sounds/fire.mp3');
+    audio1.volume = 0.6;
+    fireAudioRef.current = audio1;
 
-    // Stop at halfway point (~4.5 seconds)
-    const stopAtHalf = () => {
-      setTimeout(() => {
-        if (fireAudioRef.current) {
-          fireAudioRef.current.pause();
-          fireAudioRef.current = null;
-        }
-      }, 4500);
+    // When first sound ends, play second sound
+    audio1.onended = () => {
+      const audio2 = new Audio('/sounds/fire2.mp3');
+      audio2.volume = 0.6;
+      fireAudioRef.current = audio2;
+      audio2.play().catch(() => {});
     };
 
-    audio.play().then(stopAtHalf).catch(() => {});
+    audio1.play().catch(() => {});
   }, []);
 
   useEffect(() => {
