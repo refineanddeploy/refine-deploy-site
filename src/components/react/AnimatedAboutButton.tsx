@@ -11,7 +11,7 @@ export default function AnimatedAboutButton() {
   const [holdFrame, setHoldFrame] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const audioRef = useRef<AudioContext | null>(null);
-  const soundsPlayed = useRef({ fire: false });
+  const soundsPlayed = useRef({ sound: false });
   const fireAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const [audioUnlocked, setAudioUnlocked] = useState(false);
@@ -84,53 +84,42 @@ export default function AnimatedAboutButton() {
     };
   }, [initAudio, audioUnlocked]);
 
-  // Original footstep sound
-  const playStep = useCallback(() => {
-    const ctx = initAudio(); if (!ctx) return;
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator(), gain = ctx.createGain();
-    osc.frequency.setValueAtTime(45, now);
-    osc.frequency.exponentialRampToValueAtTime(20, now + 0.08);
-    gain.gain.setValueAtTime(0.9, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.15);
-  }, [initAudio]);
-
-  // Fire sound from merged mp3
-  const playFire = useCallback(() => {
+  // Combined animation sound (footsteps + fire)
+  const playAnimationSound = useCallback(() => {
     if (fireAudioRef.current) {
       fireAudioRef.current.pause();
       fireAudioRef.current = null;
     }
 
-    const audio = new Audio('/sounds/fire.mp3');
-    audio.volume = 0.6;
+    const audio = new Audio('/sounds/animation.mp3');
+    audio.volume = 0.7;
     fireAudioRef.current = audio;
     audio.play().catch(() => {});
   }, []);
 
   useEffect(() => {
-    soundsPlayed.current = { fire: false };
+    soundsPlayed.current = { sound: false };
     const t = setTimeout(() => { setPhase("walking"); setStepCount(0); }, 200);
     return () => clearTimeout(t);
   }, [animKey]);
 
   useEffect(() => {
     if (phase !== "walking") return;
-    playStep();
-    const iv = setInterval(() => { setStepCount(s => s + 1); playStep(); }, 350);
+    // Play combined sound at start of walking
+    if (!soundsPlayed.current.sound) {
+      soundsPlayed.current.sound = true;
+      playAnimationSound();
+    }
+    const iv = setInterval(() => { setStepCount(s => s + 1); }, 350);
     const next = setTimeout(() => { clearInterval(iv); setPhase("crouching"); }, 3500);
     return () => { clearInterval(iv); clearTimeout(next); };
-  }, [phase, playStep]);
+  }, [phase, playAnimationSound]);
 
   useEffect(() => {
     if (phase !== "crouching") return;
-    if (!soundsPlayed.current.fire) { soundsPlayed.current.fire = true; playFire(); }
     const t = setTimeout(() => setPhase("grabbing"), 500);
     return () => clearTimeout(t);
-  }, [phase, playFire]);
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "grabbing") return;
@@ -154,7 +143,7 @@ export default function AnimatedAboutButton() {
     if (audioRef.current) try { audioRef.current.close(); } catch {}
     if (fireAudioRef.current) { fireAudioRef.current.pause(); fireAudioRef.current = null; }
     audioRef.current = null; initAudio();
-    soundsPlayed.current = { fire: false };
+    soundsPlayed.current = { sound: false };
     setPhase(null); setStepCount(0); setHoldFrame(0); setAnimKey(k => k + 1);
   }, [initAudio]);
 
