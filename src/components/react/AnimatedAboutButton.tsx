@@ -8,6 +8,8 @@ type Phase = "walking" | "crouching" | "grabbing" | "lifting" | "holding";
 // Global singleton audio to prevent double playing
 let globalAudio: HTMLAudioElement | null = null;
 let globalAudioPlaying = false;
+let globalAudioContext: AudioContext | null = null;
+let globalGainNode: GainNode | null = null;
 
 export default function AnimatedAboutButton() {
   const [phase, setPhase] = useState<Phase | null>(null);
@@ -78,17 +80,45 @@ export default function AnimatedAboutButton() {
     globalAudioPlaying = false;
   }, []);
 
-  // Combined animation sound (footsteps + fire) - singleton
+  // Combined animation sound (footsteps + fire) - singleton with Web Audio API for iOS volume control
   const playAnimationSound = useCallback(() => {
     // Prevent double playing from multiple component instances
     if (globalAudioPlaying) return;
     stopSound();
     globalAudioPlaying = true;
+
     const audio = new Audio('/sounds/animation.mp3');
-    // Lower volume on mobile devices
-    const isMobile = window.innerWidth < 768;
-    audio.volume = isMobile ? 0.05 : 0.5;
     globalAudio = audio;
+
+    // Use Web Audio API for volume control (works on iOS)
+    const isMobile = window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const targetVolume = isMobile ? 0.05 : 0.5;
+
+    try {
+      // Create or reuse AudioContext
+      if (!globalAudioContext || globalAudioContext.state === 'closed') {
+        globalAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+
+      // Resume if suspended (required for iOS)
+      if (globalAudioContext.state === 'suspended') {
+        globalAudioContext.resume();
+      }
+
+      // Create gain node for volume control
+      globalGainNode = globalAudioContext.createGain();
+      globalGainNode.gain.value = targetVolume;
+
+      // Connect audio element to Web Audio API
+      const source = globalAudioContext.createMediaElementSource(audio);
+      source.connect(globalGainNode);
+      globalGainNode.connect(globalAudioContext.destination);
+
+    } catch (e) {
+      // Fallback to regular volume (won't work on iOS but better than nothing)
+      audio.volume = targetVolume;
+    }
+
     audio.onended = () => { globalAudioPlaying = false; };
     audio.play().catch(() => { globalAudioPlaying = false; });
   }, [stopSound]);
