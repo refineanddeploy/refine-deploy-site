@@ -13,6 +13,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioUnlockedRef = useRef(false);
   const stringControls = useAnimation();
+  const ballControls = useAnimation();
 
   useEffect(() => {
     setMounted(true);
@@ -105,16 +106,25 @@ export default function ThemeToggle({ variant = "default" }: Props) {
     doToggle();
   }, [initAudio, playClickSound, doToggle]);
 
-  // Handle pull string click
+  // Handle pull string click - string extends when pulled
   const handlePullClick = useCallback(() => {
     initAudio();
+
+    // Animate string stretching (scaleY from attachment point)
     stringControls.start({
-      y: [0, 24, -6, 0],
-      transition: { duration: 0.4, times: [0, 0.35, 0.7, 1] }
+      scaleY: [1, 1.5, 0.9, 1],
+      transition: { duration: 0.45, times: [0, 0.3, 0.65, 1], ease: "easeOut" }
     });
+
+    // Animate ball moving down with the extended string
+    ballControls.start({
+      y: [0, 28, -4, 0],
+      transition: { duration: 0.45, times: [0, 0.3, 0.65, 1], ease: "easeOut" }
+    });
+
     playClickSound();
     doToggle();
-  }, [initAudio, playClickSound, doToggle, stringControls]);
+  }, [initAudio, playClickSound, doToggle, stringControls, ballControls]);
 
   if (!mounted) {
     return (
@@ -301,22 +311,20 @@ export default function ThemeToggle({ variant = "default" }: Props) {
       </motion.button>
 
       {/* Pull String - Hanging from right side of button */}
-      <motion.div
+      <div
         className="absolute cursor-pointer select-none"
         style={{
           right: isCompact ? 8 : 10,
           top: trackHeight - 2,
           width: ballSize + 4,
-          height: stringLength + ballSize,
+          height: stringLength + ballSize + 30,
         }}
         onClick={handlePullClick}
-        animate={stringControls}
-        whileHover={{ scale: 1.05 }}
         aria-label="Pull to toggle theme"
         role="button"
       >
-        {/* String/cord */}
-        <div
+        {/* String/cord - stretches from top */}
+        <motion.div
           className="absolute left-1/2 -translate-x-1/2 top-0"
           style={{
             width: 2,
@@ -325,10 +333,12 @@ export default function ThemeToggle({ variant = "default" }: Props) {
               ? "linear-gradient(180deg, #78716c 0%, #57534e 50%, #44403c 100%)"
               : "linear-gradient(180deg, #52525b 0%, #3f3f46 50%, #27272a 100%)",
             borderRadius: 1,
+            transformOrigin: "top center",
           }}
+          animate={stringControls}
         />
 
-        {/* Metal ball */}
+        {/* Metal ball - moves with the string */}
         <motion.div
           className="absolute left-1/2 -translate-x-1/2"
           style={{
@@ -343,6 +353,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
               ? "0 3px 6px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.9)"
               : "0 3px 6px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2)",
           }}
+          animate={ballControls}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95, y: 8 }}
         >
@@ -359,7 +370,7 @@ export default function ThemeToggle({ variant = "default" }: Props) {
             }}
           />
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }
