@@ -24,6 +24,9 @@ const siteTitle = `${title} | Refine & Deploy`;
     <meta name="description" content={description} />
     <title>{siteTitle}</title>
 
+    <!-- Theme color for mobile status bar -->
+    <meta name="theme-color" content="#ffffff" id="theme-color-meta" />
+
     <!-- Blocking theme script - prevents flash of wrong theme -->
     <script is:inline>
       (function() {
@@ -31,6 +34,11 @@ const siteTitle = `${title} | Refine & Deploy`;
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = stored || (prefersDark ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
+        // Set status bar color based on theme
+        const metaTheme = document.getElementById('theme-color-meta');
+        if (metaTheme) {
+          metaTheme.content = theme === 'dark' ? '#111827' : '#ffffff';
+        }
       })();
     </script>
   </head>
