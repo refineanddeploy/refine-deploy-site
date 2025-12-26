@@ -114,12 +114,10 @@ export default function ThemeToggle({ variant = "default" }: Props) {
 
   if (!mounted) {
     return (
-      <div className="flex flex-col items-center">
-        <div
-          className={`${variant === "compact" ? "w-14 h-7" : "w-16 h-8"} rounded-full bg-tertiary`}
-          aria-hidden="true"
-        />
-      </div>
+      <div
+        className={`${variant === "compact" ? "w-14 h-7" : "w-16 h-8"} rounded-full bg-tertiary`}
+        aria-hidden="true"
+      />
     );
   }
 
@@ -133,12 +131,12 @@ export default function ThemeToggle({ variant = "default" }: Props) {
   const padding = (trackHeight - knobSize) / 2;
   const knobTravel = trackWidth - knobSize - padding * 2;
 
-  // String sizes - hanging from bottom center
-  const stringLength = isCompact ? 32 : 44;
-  const ballSize = isCompact ? 14 : 18;
+  // String sizes - hanging from right side of button
+  const stringLength = isCompact ? 28 : 40;
+  const ballSize = isCompact ? 12 : 16;
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="relative">
       {/* Toggle Switch */}
       <motion.button
         onClick={toggleTheme}
@@ -298,13 +296,14 @@ export default function ThemeToggle({ variant = "default" }: Props) {
         </motion.div>
       </motion.button>
 
-      {/* Pull String - Hanging from bottom center */}
+      {/* Pull String - Hanging from right side of button */}
       <motion.div
-        className="relative cursor-pointer select-none"
+        className="absolute cursor-pointer select-none"
         style={{
-          width: ballSize + 8,
+          right: isCompact ? 8 : 10,
+          top: trackHeight - 2,
+          width: ballSize + 4,
           height: stringLength + ballSize,
-          marginTop: -2,
         }}
         onClick={handlePullClick}
         animate={stringControls}
