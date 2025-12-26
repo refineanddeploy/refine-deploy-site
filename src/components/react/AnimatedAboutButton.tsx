@@ -107,22 +107,49 @@ export default function AnimatedAboutButton() {
   const playLift = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
-    const osc = ctx.createOscillator(), gain = ctx.createGain();
-    osc.frequency.setValueAtTime(120, now); osc.frequency.exponentialRampToValueAtTime(400, now + 0.5);
-    gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-    osc.connect(gain).connect(ctx.destination); osc.start(now); osc.stop(now + 0.7);
+
+    // Soft whoosh sound - much more pleasant
+    const bufferSize = ctx.sampleRate * 0.5;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      const t = i / bufferSize;
+      const envelope = Math.sin(t * Math.PI) * 0.3; // Gentle fade in/out
+      data[i] = (Math.random() * 2 - 1) * envelope;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = "lowpass";
+    lowpass.frequency.setValueAtTime(200, now);
+    lowpass.frequency.exponentialRampToValueAtTime(600, now + 0.4);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.linearRampToValueAtTime(0.15, now + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+    noise.connect(lowpass).connect(gain).connect(ctx.destination);
+    noise.start(now);
   }, [initAudio]);
 
   const playCelebrate = useCallback(() => {
     const ctx = initAudio(); if (!ctx) return;
     const now = ctx.currentTime;
-    [523, 659, 784, 1047].forEach((f, i) => {
-      const osc = ctx.createOscillator(), gain = ctx.createGain();
+
+    // Soft, pleasant chime - lower frequencies
+    [262, 330, 392, 523].forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
       osc.frequency.value = f;
-      gain.gain.setValueAtTime(0, now + i * 0.12);
-      gain.gain.linearRampToValueAtTime(0.35, now + i * 0.12 + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.4);
-      osc.connect(gain).connect(ctx.destination); osc.start(now + i * 0.12); osc.stop(now + i * 0.12 + 0.45);
+      gain.gain.setValueAtTime(0, now + i * 0.15);
+      gain.gain.linearRampToValueAtTime(0.15, now + i * 0.15 + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.5);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now + i * 0.15);
+      osc.stop(now + i * 0.15 + 0.55);
     });
   }, [initAudio]);
 
