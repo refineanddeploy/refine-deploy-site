@@ -399,7 +399,7 @@ export default function AnimatedAboutButton() {
                 transition={{ duration: 0.5 }}
                 style={{ width: 50, height: 55 }}
               >
-                {/* Large ambient light - teal glow (same size, brighter in dark mode) */}
+                {/* Large ambient light - teal glow (visible in both modes) */}
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
                   style={{
@@ -407,18 +407,18 @@ export default function AnimatedAboutButton() {
                     height: 280,
                     bottom: -80,
                     background: isDark
-                      ? "radial-gradient(ellipse, rgba(45,212,191,0.5) 0%, rgba(20,184,166,0.25) 25%, rgba(13,148,136,0.1) 50%, transparent 70%)"
-                      : "radial-gradient(ellipse, rgba(45,212,191,0.3) 0%, rgba(20,184,166,0.12) 30%, rgba(13,148,136,0.04) 50%, transparent 70%)",
-                    filter: "blur(25px)",
+                      ? "radial-gradient(ellipse, rgba(45,212,191,0.55) 0%, rgba(20,184,166,0.3) 25%, rgba(13,148,136,0.12) 50%, transparent 70%)"
+                      : "radial-gradient(ellipse, rgba(45,212,191,0.5) 0%, rgba(20,184,166,0.25) 25%, rgba(13,148,136,0.1) 50%, transparent 70%)",
+                    filter: "blur(20px)",
                   }}
                   animate={{
-                    opacity: isDark ? [0.85, 1, 0.9, 1, 0.85] : [0.7, 1, 0.8, 0.95, 0.7],
+                    opacity: isDark ? [0.85, 1, 0.9, 1, 0.85] : [0.85, 1, 0.9, 1, 0.85],
                     scale: [1, 1.08, 0.96, 1.04, 1],
                   }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                 />
 
-                {/* Core bright teal glow (same size, brighter in dark mode) */}
+                {/* Core bright teal glow (visible in both modes) */}
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 rounded-full"
                   style={{
@@ -426,12 +426,12 @@ export default function AnimatedAboutButton() {
                     height: 55,
                     bottom: -8,
                     background: isDark
-                      ? "radial-gradient(ellipse, rgba(94,234,212,0.9) 0%, rgba(45,212,191,0.6) 40%, transparent 70%)"
-                      : "radial-gradient(ellipse, rgba(94,234,212,0.7) 0%, rgba(45,212,191,0.4) 40%, transparent 70%)",
-                    filter: "blur(10px)",
+                      ? "radial-gradient(ellipse, rgba(94,234,212,0.95) 0%, rgba(45,212,191,0.65) 40%, transparent 70%)"
+                      : "radial-gradient(ellipse, rgba(45,212,191,0.85) 0%, rgba(20,184,166,0.55) 40%, transparent 70%)",
+                    filter: "blur(8px)",
                   }}
                   animate={{
-                    opacity: isDark ? [0.9, 1, 0.92, 1, 0.9] : [0.8, 1, 0.85, 0.95, 0.8],
+                    opacity: isDark ? [0.9, 1, 0.92, 1, 0.9] : [0.9, 1, 0.92, 1, 0.9],
                     scale: [1, 1.15, 0.95, 1.1, 1],
                   }}
                   transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
