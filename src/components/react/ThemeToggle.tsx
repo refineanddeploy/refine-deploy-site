@@ -95,11 +95,6 @@ export default function ThemeToggle({ variant = "default" }: Props) {
       document.documentElement.setAttribute("data-theme", newTheme);
       localStorage.setItem("theme", newTheme);
       document.body.classList.add("theme-ready");
-      // Update status bar color
-      const metaTheme = document.getElementById("theme-color-meta") as HTMLMetaElement;
-      if (metaTheme) {
-        metaTheme.content = newTheme === "dark" ? "#111827" : "#fafafa";
-      }
       return newTheme;
     });
   }, []);
