@@ -376,7 +376,7 @@ export default function AnimatedAboutButton() {
             </motion.svg>
           </motion.div>
 
-          {/* Fire Animation - Multiple Flames with Smoke */}
+          {/* Fire Animation - Multiple Flames with Smoke and Real Light */}
           <AnimatePresence>
             {showFire && (
               <motion.div
@@ -385,23 +385,40 @@ export default function AnimatedAboutButton() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.5 }}
                 transition={{ duration: 0.5 }}
-                style={{ width: 70, height: 55 }}
+                style={{ width: 50, height: 55 }}
               >
-                {/* Glow effect - wider for multiple flames */}
+                {/* Large ambient light - illuminates the whole area */}
+                <motion.div
+                  className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
+                  style={{
+                    width: 200,
+                    height: 200,
+                    bottom: -60,
+                    background: "radial-gradient(ellipse, rgba(255,150,50,0.35) 0%, rgba(255,100,30,0.15) 30%, rgba(255,80,20,0.05) 50%, transparent 70%)",
+                    filter: "blur(20px)",
+                  }}
+                  animate={{
+                    opacity: [0.7, 1, 0.8, 0.95, 0.7],
+                    scale: [1, 1.08, 0.96, 1.04, 1],
+                  }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                />
+
+                {/* Core bright glow */}
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 rounded-full"
                   style={{
-                    width: 80,
-                    height: 50,
-                    bottom: -8,
-                    background: "radial-gradient(ellipse, rgba(255,120,50,0.5) 0%, rgba(255,80,20,0.25) 40%, transparent 70%)",
-                    filter: "blur(10px)",
+                    width: 60,
+                    height: 40,
+                    bottom: -5,
+                    background: "radial-gradient(ellipse, rgba(255,200,100,0.8) 0%, rgba(255,120,50,0.5) 40%, transparent 70%)",
+                    filter: "blur(8px)",
                   }}
                   animate={{
-                    opacity: [0.6, 0.9, 0.7, 0.85, 0.6],
-                    scale: [1, 1.1, 0.95, 1.05, 1],
+                    opacity: [0.8, 1, 0.85, 0.95, 0.8],
+                    scale: [1, 1.15, 0.95, 1.1, 1],
                   }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
                 />
 
                 {/* Smoke particles */}
@@ -412,15 +429,15 @@ export default function AnimatedAboutButton() {
                     style={{
                       width: 6 + i * 2,
                       height: 6 + i * 2,
-                      left: 28 + (i - 1.5) * 6,
+                      left: 20 + (i - 1.5) * 5,
                       bottom: 40,
-                      background: "rgba(120, 120, 120, 0.3)",
+                      background: "rgba(100, 100, 100, 0.25)",
                       filter: "blur(2px)",
                     }}
                     animate={{
                       y: [-5, -35, -60],
-                      x: [0, (i - 1.5) * 4, (i - 1.5) * 8],
-                      opacity: [0.4, 0.25, 0],
+                      x: [0, (i - 1.5) * 3, (i - 1.5) * 6],
+                      opacity: [0.35, 0.2, 0],
                       scale: [0.8, 1.5, 2.5],
                     }}
                     transition={{
@@ -432,132 +449,90 @@ export default function AnimatedAboutButton() {
                   />
                 ))}
 
-                {/* Left small flame */}
+                {/* Combined flames SVG - all flames in one touching group */}
                 <motion.svg
-                  viewBox="0 0 24 35"
-                  style={{ width: 18, height: 28, position: "absolute", left: 5, bottom: 0 }}
-                  animate={{
-                    scaleX: [1, 1.08, 0.92, 1.05, 1],
-                    scaleY: [1, 1.1, 0.94, 1.06, 1],
-                  }}
-                  transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
+                  viewBox="0 0 50 45"
+                  style={{ width: 50, height: 45, position: "absolute", left: 0, bottom: 0 }}
                 >
+                  {/* Left flame */}
                   <motion.path
-                    d="M12 2 C12 2 4 12 4 20 C4 28 8 33 12 33 C16 33 20 28 20 20 C20 12 12 2 12 2"
-                    fill="url(#fireGradientOuterL)"
+                    d="M12 8 C12 8 5 18 5 28 C5 36 8 42 12 42 C16 42 19 36 19 28 C19 18 12 8 12 8"
+                    fill="url(#fireGradOuter)"
                     animate={{
                       d: [
-                        "M12 2 C12 2 4 12 4 20 C4 28 8 33 12 33 C16 33 20 28 20 20 C20 12 12 2 12 2",
-                        "M12 4 C12 4 3 11 3 19 C3 27 7 33 12 33 C17 33 21 27 21 19 C21 11 12 4 12 4",
-                        "M12 3 C12 3 5 13 5 21 C5 29 9 33 12 33 C15 33 19 29 19 21 C19 13 12 3 12 3",
+                        "M12 8 C12 8 5 18 5 28 C5 36 8 42 12 42 C16 42 19 36 19 28 C19 18 12 8 12 8",
+                        "M12 10 C12 10 4 17 4 27 C4 35 7 42 12 42 C17 42 20 35 20 27 C20 17 12 10 12 10",
+                        "M12 9 C12 9 6 19 6 29 C6 37 9 42 12 42 C15 42 18 37 18 29 C18 19 12 9 12 9",
                       ]
                     }}
                     transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut" }}
                   />
-                  <motion.ellipse cx="12" rx="3" fill="url(#fireGradientCoreL)"
-                    animate={{ cy: [26, 24, 27, 25, 26], ry: [4, 5, 3, 4.5, 4] }}
+                  <motion.ellipse cx="12" rx="3" fill="url(#fireGradCore)"
+                    animate={{ cy: [35, 33, 36, 34, 35], ry: [4, 5, 3, 4.5, 4] }}
                     transition={{ duration: 0.35, repeat: Infinity, ease: "easeInOut" }}
                   />
-                  <defs>
-                    <linearGradient id="fireGradientOuterL" x1="0%" y1="100%" x2="0%" y2="0%">
-                      <stop offset="0%" stopColor="#FF4500" />
-                      <stop offset="100%" stopColor="#FFA500" />
-                    </linearGradient>
-                    <linearGradient id="fireGradientCoreL" x1="0%" y1="100%" x2="0%" y2="0%">
-                      <stop offset="0%" stopColor="#FFD700" />
-                      <stop offset="100%" stopColor="#FFFACD" />
-                    </linearGradient>
-                  </defs>
-                </motion.svg>
 
-                {/* Center main flame (larger) */}
-                <motion.svg
-                  viewBox="0 0 30 42"
-                  style={{ width: 26, height: 38, position: "absolute", left: 22, bottom: 0 }}
-                  animate={{
-                    scaleX: [1, 1.06, 0.94, 1.03, 1],
-                    scaleY: [1, 1.08, 0.95, 1.05, 1],
-                  }}
-                  transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
-                >
+                  {/* Center main flame (taller) */}
                   <motion.path
-                    d="M15 2 C15 2 5 14 5 24 C5 34 10 40 15 40 C20 40 25 34 25 24 C25 14 15 2 15 2"
-                    fill="url(#fireGradientOuterC)"
+                    d="M25 2 C25 2 14 16 14 28 C14 38 19 44 25 44 C31 44 36 38 36 28 C36 16 25 2 25 2"
+                    fill="url(#fireGradOuter)"
                     animate={{
                       d: [
-                        "M15 2 C15 2 5 14 5 24 C5 34 10 40 15 40 C20 40 25 34 25 24 C25 14 15 2 15 2",
-                        "M15 4 C15 4 3 13 3 23 C3 33 9 40 15 40 C21 40 27 33 27 23 C27 13 15 4 15 4",
-                        "M15 3 C15 3 6 15 6 25 C6 35 11 40 15 40 C19 40 24 35 24 25 C24 15 15 3 15 3",
+                        "M25 2 C25 2 14 16 14 28 C14 38 19 44 25 44 C31 44 36 38 36 28 C36 16 25 2 25 2",
+                        "M25 4 C25 4 12 15 12 27 C12 37 18 44 25 44 C32 44 38 37 38 27 C38 15 25 4 25 4",
+                        "M25 3 C25 3 15 17 15 29 C15 39 20 44 25 44 C30 44 35 39 35 29 C35 17 25 3 25 3",
                       ]
                     }}
-                    transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }}
+                    transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
                   />
                   <motion.path
-                    d="M15 12 C15 12 10 20 10 28 C10 34 12 38 15 38 C18 38 20 34 20 28 C20 20 15 12 15 12"
-                    fill="url(#fireGradientInnerC)"
+                    d="M25 14 C25 14 19 22 19 30 C19 36 22 40 25 40 C28 40 31 36 31 30 C31 22 25 14 25 14"
+                    fill="url(#fireGradInner)"
                     animate={{
                       d: [
-                        "M15 12 C15 12 10 20 10 28 C10 34 12 38 15 38 C18 38 20 34 20 28 C20 20 15 12 15 12",
-                        "M15 14 C15 14 8 19 8 27 C8 33 11 38 15 38 C19 38 22 33 22 27 C22 19 15 14 15 14",
-                        "M15 13 C15 13 11 21 11 29 C11 35 13 38 15 38 C17 38 19 35 19 29 C19 21 15 13 15 13",
+                        "M25 14 C25 14 19 22 19 30 C19 36 22 40 25 40 C28 40 31 36 31 30 C31 22 25 14 25 14",
+                        "M25 16 C25 16 17 21 17 29 C17 35 21 40 25 40 C29 40 33 35 33 29 C33 21 25 16 25 16",
+                        "M25 15 C25 15 20 23 20 31 C20 37 23 40 25 40 C27 40 30 37 30 31 C30 23 25 15 25 15",
                       ]
                     }}
-                    transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
+                    transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
                   />
-                  <motion.ellipse cx="15" rx="4" fill="url(#fireGradientCoreC)"
-                    animate={{ cy: [32, 30, 33, 31, 32], ry: [5, 6, 4, 5.5, 5] }}
+                  <motion.ellipse cx="25" rx="4" fill="url(#fireGradCore)"
+                    animate={{ cy: [35, 33, 36, 34, 35], ry: [4, 5.5, 3.5, 5, 4] }}
                     transition={{ duration: 0.4, repeat: Infinity, ease: "easeInOut" }}
                   />
+
+                  {/* Right flame */}
+                  <motion.path
+                    d="M38 8 C38 8 31 18 31 28 C31 36 34 42 38 42 C42 42 45 36 45 28 C45 18 38 8 38 8"
+                    fill="url(#fireGradOuter)"
+                    animate={{
+                      d: [
+                        "M38 8 C38 8 31 18 31 28 C31 36 34 42 38 42 C42 42 45 36 45 28 C45 18 38 8 38 8",
+                        "M38 10 C38 10 30 17 30 27 C30 35 33 42 38 42 C43 42 46 35 46 27 C46 17 38 10 38 10",
+                        "M38 9 C38 9 32 19 32 29 C32 37 35 42 38 42 C41 42 44 37 44 29 C44 19 38 9 38 9",
+                      ]
+                    }}
+                    transition={{ duration: 0.55, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                  />
+                  <motion.ellipse cx="38" rx="3" fill="url(#fireGradCore)"
+                    animate={{ cy: [35, 33, 36, 34, 35], ry: [4, 5, 3, 4.5, 4] }}
+                    transition={{ duration: 0.38, repeat: Infinity, ease: "easeInOut" }}
+                  />
+
+                  {/* Shared gradients */}
                   <defs>
-                    <linearGradient id="fireGradientOuterC" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <linearGradient id="fireGradOuter" x1="0%" y1="100%" x2="0%" y2="0%">
                       <stop offset="0%" stopColor="#FF4500" />
                       <stop offset="50%" stopColor="#FF6B35" />
                       <stop offset="100%" stopColor="#FFA500" />
                     </linearGradient>
-                    <linearGradient id="fireGradientInnerC" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <linearGradient id="fireGradInner" x1="0%" y1="100%" x2="0%" y2="0%">
                       <stop offset="0%" stopColor="#FF8C00" />
                       <stop offset="60%" stopColor="#FFD700" />
                       <stop offset="100%" stopColor="#FFEC8B" />
                     </linearGradient>
-                    <linearGradient id="fireGradientCoreC" x1="0%" y1="100%" x2="0%" y2="0%">
-                      <stop offset="0%" stopColor="#FFD700" />
-                      <stop offset="100%" stopColor="#FFFACD" />
-                    </linearGradient>
-                  </defs>
-                </motion.svg>
-
-                {/* Right small flame */}
-                <motion.svg
-                  viewBox="0 0 24 35"
-                  style={{ width: 18, height: 28, position: "absolute", right: 5, bottom: 0 }}
-                  animate={{
-                    scaleX: [1, 1.1, 0.9, 1.04, 1],
-                    scaleY: [1, 1.12, 0.92, 1.07, 1],
-                  }}
-                  transition={{ duration: 0.65, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
-                >
-                  <motion.path
-                    d="M12 2 C12 2 4 12 4 20 C4 28 8 33 12 33 C16 33 20 28 20 20 C20 12 12 2 12 2"
-                    fill="url(#fireGradientOuterR)"
-                    animate={{
-                      d: [
-                        "M12 2 C12 2 4 12 4 20 C4 28 8 33 12 33 C16 33 20 28 20 20 C20 12 12 2 12 2",
-                        "M12 3 C12 3 5 11 5 19 C5 27 9 33 12 33 C15 33 19 27 19 19 C19 11 12 3 12 3",
-                        "M12 4 C12 4 3 13 3 21 C3 29 7 33 12 33 C17 33 21 29 21 21 C21 13 12 4 12 4",
-                      ]
-                    }}
-                    transition={{ duration: 0.55, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <motion.ellipse cx="12" rx="3" fill="url(#fireGradientCoreR)"
-                    animate={{ cy: [26, 24, 27, 25, 26], ry: [4, 5, 3, 4.5, 4] }}
-                    transition={{ duration: 0.38, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <defs>
-                    <linearGradient id="fireGradientOuterR" x1="0%" y1="100%" x2="0%" y2="0%">
-                      <stop offset="0%" stopColor="#FF4500" />
-                      <stop offset="100%" stopColor="#FFA500" />
-                    </linearGradient>
-                    <linearGradient id="fireGradientCoreR" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <linearGradient id="fireGradCore" x1="0%" y1="100%" x2="0%" y2="0%">
                       <stop offset="0%" stopColor="#FFD700" />
                       <stop offset="100%" stopColor="#FFFACD" />
                     </linearGradient>
@@ -573,13 +548,13 @@ export default function AnimatedAboutButton() {
                       width: 2,
                       height: 2,
                       background: "#FFD700",
-                      left: 15 + i * 10,
-                      bottom: 35,
-                      boxShadow: "0 0 4px 1px rgba(255, 200, 50, 0.6)",
+                      left: 10 + i * 8,
+                      bottom: 38,
+                      boxShadow: "0 0 6px 2px rgba(255, 200, 50, 0.8)",
                     }}
                     animate={{
                       y: [-5, -20, -35],
-                      x: [0, (i - 2) * 6, (i - 2) * 10],
+                      x: [0, (i - 2) * 5, (i - 2) * 8],
                       opacity: [1, 0.7, 0],
                       scale: [1, 0.7, 0.3],
                     }}
