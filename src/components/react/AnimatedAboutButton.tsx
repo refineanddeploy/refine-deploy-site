@@ -10,6 +10,7 @@ let globalAudio: HTMLAudioElement | null = null;
 let globalAudioPlaying = false;
 let globalAudioContext: AudioContext | null = null;
 let globalGainNode: GainNode | null = null;
+let preloadedAudio: HTMLAudioElement | null = null;
 
 export default function AnimatedAboutButton() {
   const [phase, setPhase] = useState<Phase | null>(null);
@@ -32,6 +33,30 @@ export default function AnimatedAboutButton() {
     const observer = new MutationObserver(checkTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return () => observer.disconnect();
+  }, []);
+
+  // Preload audio on mount for faster playback
+  useEffect(() => {
+    if (!preloadedAudio) {
+      preloadedAudio = new Audio('/sounds/animation.mp3');
+      preloadedAudio.preload = 'auto';
+      preloadedAudio.load();
+    }
+    // Also pre-initialize AudioContext on first user interaction
+    const initContext = () => {
+      if (!globalAudioContext || globalAudioContext.state === 'closed') {
+        globalAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      if (globalAudioContext.state === 'suspended') {
+        globalAudioContext.resume();
+      }
+    };
+    window.addEventListener('touchstart', initContext, { once: true });
+    window.addEventListener('click', initContext, { once: true });
+    return () => {
+      window.removeEventListener('touchstart', initContext);
+      window.removeEventListener('click', initContext);
+    };
   }, []);
 
   const initAudio = useCallback(() => {
