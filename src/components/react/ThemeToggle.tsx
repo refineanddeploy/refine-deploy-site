@@ -30,50 +30,67 @@ export default function ThemeToggle({ variant = "default" }: Props) {
     audioUnlockedRef.current = true;
   }, []);
 
-  // Play satisfying click sound
+  // Play realistic light switch click sound
   const playClickSound = useCallback(() => {
     if (!audioContextRef.current || !audioUnlockedRef.current) return;
 
     const ctx = audioContextRef.current;
     const now = ctx.currentTime;
 
-    // Create a satisfying mechanical click
-    // First click - attack
-    const osc1 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    osc1.type = "sine";
-    osc1.frequency.setValueAtTime(1800, now);
-    osc1.frequency.exponentialRampToValueAtTime(600, now + 0.03);
-    gain1.gain.setValueAtTime(0.15, now);
-    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-    osc1.connect(gain1);
-    gain1.connect(ctx.destination);
-    osc1.start(now);
-    osc1.stop(now + 0.05);
+    // Create noise buffer for realistic mechanical click
+    const bufferSize = ctx.sampleRate * 0.03; // 30ms of noise
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
 
-    // Second part - the "snap" of the switch
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    osc2.type = "square";
-    osc2.frequency.setValueAtTime(150, now + 0.02);
-    gain2.gain.setValueAtTime(0.08, now + 0.02);
-    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-    osc2.connect(gain2);
-    gain2.connect(ctx.destination);
-    osc2.start(now + 0.02);
-    osc2.stop(now + 0.08);
+    // Generate noise with sharp attack
+    for (let i = 0; i < bufferSize; i++) {
+      // Sharp exponential decay
+      const envelope = Math.exp(-i / (bufferSize * 0.08));
+      data[i] = (Math.random() * 2 - 1) * envelope;
+    }
 
-    // Subtle resonance
-    const osc3 = ctx.createOscillator();
-    const gain3 = ctx.createGain();
-    osc3.type = "sine";
-    osc3.frequency.setValueAtTime(400, now + 0.01);
-    gain3.gain.setValueAtTime(0.05, now + 0.01);
-    gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-    osc3.connect(gain3);
-    gain3.connect(ctx.destination);
-    osc3.start(now + 0.01);
-    osc3.stop(now + 0.1);
+    // Noise source - the main "click"
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = buffer;
+
+    // Bandpass filter to shape the click (makes it sound like plastic/metal)
+    const bandpass = ctx.createBiquadFilter();
+    bandpass.type = "bandpass";
+    bandpass.frequency.value = 3500;
+    bandpass.Q.value = 1.5;
+
+    // Highpass to remove mud
+    const highpass = ctx.createBiquadFilter();
+    highpass.type = "highpass";
+    highpass.frequency.value = 800;
+
+    // Main gain
+    const mainGain = ctx.createGain();
+    mainGain.gain.setValueAtTime(0.4, now);
+    mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+    // Connect noise chain
+    noiseSource.connect(bandpass);
+    bandpass.connect(highpass);
+    highpass.connect(mainGain);
+    mainGain.connect(ctx.destination);
+
+    // Add a low "thunk" for the mechanical body
+    const thunk = ctx.createOscillator();
+    const thunkGain = ctx.createGain();
+    thunk.type = "sine";
+    thunk.frequency.setValueAtTime(150, now);
+    thunk.frequency.exponentialRampToValueAtTime(80, now + 0.015);
+    thunkGain.gain.setValueAtTime(0.15, now);
+    thunkGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+    thunk.connect(thunkGain);
+    thunkGain.connect(ctx.destination);
+
+    // Start everything
+    noiseSource.start(now);
+    noiseSource.stop(now + 0.03);
+    thunk.start(now);
+    thunk.stop(now + 0.025);
   }, []);
 
   const toggleTheme = () => {
