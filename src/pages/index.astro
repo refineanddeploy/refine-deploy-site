@@ -1,33 +1,7 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
-import HorizontalProjects from '@components/react/HorizontalProjects';
 import InteractivePhone from '@components/react/InteractivePhone';
 import AnimatedAboutButton from '@components/react/AnimatedAboutButton';
-
-// Project data for horizontal scroll
-const recentProjects = [
-  {
-    title: "Adventure Co.",
-    category: "Sports",
-    year: "2025",
-    tags: ["Mobile", "Custom"],
-    image: "/api/placeholder/600/400"
-  },
-  {
-    title: "One Creative",
-    category: "Arts & Media",
-    year: "2025",
-    tags: ["Responsive", "Re-design"],
-    image: "/api/placeholder/600/400"
-  },
-  {
-    title: "Acme Beauty",
-    category: "Beauty",
-    year: "2025",
-    tags: ["Desktop", "Custom"],
-    image: "/api/placeholder/600/400"
-  }
-];
 
 // Interactive showcase projects - mix of live sites and design concepts
 const showcaseProjects = [
@@ -243,15 +217,6 @@ const services = [
     </div>
   </section>
 
-  <!-- Recent Projects Section -->
-  <section class="section-padding bg-secondary">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 mb-8 lg:mb-12">
-      <h2 class="text-primary">Recent Projects</h2>
-      <div class="w-16 sm:w-20 h-1 bg-accent mt-4 rounded-full"></div>
-    </div>
-
-    <HorizontalProjects projects={recentProjects} client:visible />
-  </section>
 
   <!-- Services Section -->
   <section class="section-padding bg-primary">
