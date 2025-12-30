@@ -6,8 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 interface Project {
   title: string;
   category: string;
-  url: string;
+  url?: string;      // For live sites (iframe)
+  image?: string;    // For design images (scrollable)
   description?: string;
+  type?: "live" | "design";  // Determines phone vs desktop
 }
 
 interface Props {
@@ -22,6 +24,7 @@ export default function InteractivePhone({ projects }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const currentProject = projects[activeProject];
+  const isDesignProject = currentProject.type === "design" || !!currentProject.image;
 
   const handleProjectChange = (index: number) => {
     if (index !== activeProject) {
@@ -41,6 +44,14 @@ export default function InteractivePhone({ projects }: Props) {
     return () => clearTimeout(timeout);
   }, [activeProject, isLoading]);
 
+  // For images, set loading to false faster
+  useEffect(() => {
+    if (isDesignProject) {
+      const timeout = setTimeout(() => setIsLoading(false), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [activeProject, isDesignProject]);
+
   // Lock body scroll when fullscreen
   useEffect(() => {
     if (isFullscreen) {
@@ -53,7 +64,7 @@ export default function InteractivePhone({ projects }: Props) {
     };
   }, [isFullscreen]);
 
-  // Phone component - reusable for both normal and fullscreen
+  // Phone Frame Component
   const PhoneFrame = ({ isFullscreenMode = false }: { isFullscreenMode?: boolean }) => (
     <div
       className={`relative ${
@@ -62,7 +73,6 @@ export default function InteractivePhone({ projects }: Props) {
           : "w-[300px] sm:w-[340px] lg:w-[360px]"
       }`}
     >
-      {/* iPhone Frame - Natural Titanium */}
       <div
         className="relative rounded-[48px] sm:rounded-[52px] p-[11px] sm:p-[12px]"
         style={{
@@ -76,25 +86,20 @@ export default function InteractivePhone({ projects }: Props) {
                inset 0 -1px 0 rgba(0,0,0,0.4)`,
         }}
       >
-        {/* Side Buttons - Left */}
+        {/* Side Buttons */}
         <div className="absolute left-[-3px] top-[95px] sm:top-[105px] w-[3px] h-[28px] sm:h-[32px] rounded-l-sm"
              style={{ background: "linear-gradient(to right, #48484a, #3a3a3c)" }} />
         <div className="absolute left-[-3px] top-[135px] sm:top-[150px] w-[3px] h-[55px] sm:h-[62px] rounded-l-sm"
              style={{ background: "linear-gradient(to right, #48484a, #3a3a3c)" }} />
         <div className="absolute left-[-3px] top-[200px] sm:top-[225px] w-[3px] h-[55px] sm:h-[62px] rounded-l-sm"
              style={{ background: "linear-gradient(to right, #48484a, #3a3a3c)" }} />
-
-        {/* Side Button - Right */}
         <div className="absolute right-[-3px] top-[155px] sm:top-[175px] w-[3px] h-[75px] sm:h-[85px] rounded-r-sm"
              style={{ background: "linear-gradient(to left, #48484a, #3a3a3c)" }} />
 
         {/* Screen Area */}
         <div
           className="relative rounded-[38px] sm:rounded-[42px] overflow-hidden"
-          style={{
-            background: "#000",
-            aspectRatio: "9 / 19.5",
-          }}
+          style={{ background: "#000", aspectRatio: "9 / 19.5" }}
         >
           {/* Dynamic Island */}
           <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
@@ -109,7 +114,6 @@ export default function InteractivePhone({ projects }: Props) {
 
           {/* Screen Content */}
           <div className="absolute inset-0">
-            {/* Loading State */}
             <AnimatePresence>
               {isLoading && (
                 <motion.div
@@ -119,72 +123,50 @@ export default function InteractivePhone({ projects }: Props) {
                   className="absolute inset-0 z-20 flex items-center justify-center"
                   style={{ background: "rgb(var(--color-bg-secondary))" }}
                 >
-                  <div className="flex flex-col items-center gap-4">
-                    <motion.div
-                      className="w-10 h-10 rounded-full"
-                      style={{
-                        borderColor: "rgb(var(--color-accent))",
-                        borderTopColor: "transparent",
-                        borderWidth: "3px",
-                        borderStyle: "solid"
-                      }}
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    />
-                    <span className="text-sm font-medium" style={{ color: "rgb(var(--color-text-secondary))" }}>
-                      Loading...
-                    </span>
-                  </div>
+                  <motion.div
+                    className="w-10 h-10 rounded-full"
+                    style={{
+                      borderColor: "rgb(var(--color-accent))",
+                      borderTopColor: "transparent",
+                      borderWidth: "3px",
+                      borderStyle: "solid"
+                    }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Error State */}
-            {hasError && (
+            {hasError && currentProject.url && (
               <div className="absolute inset-0 z-20 flex items-center justify-center p-8"
                    style={{ background: "rgb(var(--color-bg-secondary))" }}>
                 <div className="text-center">
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center"
-                       style={{ background: "rgba(var(--color-accent), 0.15)" }}>
-                    <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"
-                         style={{ color: "rgb(var(--color-accent))" }}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                    </svg>
-                  </div>
                   <p className="text-sm font-medium mb-2" style={{ color: "rgb(var(--color-text-primary))" }}>
                     Preview unavailable
                   </p>
-                  <a
-                    href={currentProject.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block text-sm font-medium underline underline-offset-2"
-                    style={{ color: "rgb(var(--color-accent))" }}
-                  >
+                  <a href={currentProject.url} target="_blank" rel="noopener noreferrer"
+                     className="text-sm font-medium underline" style={{ color: "rgb(var(--color-accent))" }}>
                     Open in new tab
                   </a>
                 </div>
               </div>
             )}
 
-            {/* Website iframe */}
-            <iframe
-              ref={iframeRef}
-              src={currentProject.url}
-              className="w-full h-full border-0"
-              style={{ background: "#fff" }}
-              title={currentProject.title}
-              onLoad={() => {
-                setIsLoading(false);
-                setHasError(false);
-              }}
-              onError={() => {
-                setIsLoading(false);
-                setHasError(true);
-              }}
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              loading="lazy"
-            />
+            {/* Live Site iframe */}
+            {currentProject.url && (
+              <iframe
+                ref={iframeRef}
+                src={currentProject.url}
+                className="w-full h-full border-0"
+                style={{ background: "#fff" }}
+                title={currentProject.title}
+                onLoad={() => { setIsLoading(false); setHasError(false); }}
+                onError={() => { setIsLoading(false); setHasError(true); }}
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                loading="lazy"
+              />
+            )}
           </div>
 
           {/* Home Indicator */}
@@ -196,10 +178,128 @@ export default function InteractivePhone({ projects }: Props) {
     </div>
   );
 
+  // Desktop/Laptop Frame Component
+  const DesktopFrame = ({ isFullscreenMode = false }: { isFullscreenMode?: boolean }) => (
+    <div className={`relative ${isFullscreenMode ? "w-full max-w-3xl" : "w-full max-w-2xl"}`}>
+      {/* Screen bezel */}
+      <div
+        className="rounded-t-xl p-2 sm:p-3"
+        style={{
+          background: "linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)"
+        }}
+      >
+        {/* Camera dot */}
+        <div className="absolute top-2 sm:top-3 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-gray-700" />
+
+        {/* Screen content area */}
+        <div
+          className="relative bg-gray-900 rounded-lg overflow-hidden"
+          style={{ aspectRatio: "16/10" }}
+        >
+          {/* Browser chrome */}
+          <div
+            className="flex items-center gap-2 px-3 py-2 border-b"
+            style={{
+              background: "rgb(var(--color-bg-secondary))",
+              borderColor: "rgb(var(--color-border))"
+            }}
+          >
+            {/* Traffic lights */}
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+            </div>
+            {/* URL bar */}
+            <div
+              className="flex-1 mx-2 px-3 py-1 rounded text-xs truncate"
+              style={{
+                background: "rgb(var(--color-bg-tertiary))",
+                color: "rgb(var(--color-text-tertiary))"
+              }}
+            >
+              {currentProject.title.toLowerCase().replace(/\s+/g, '')}.com
+            </div>
+          </div>
+
+          {/* Scrollable content area */}
+          <div className="relative overflow-y-auto hide-scrollbar" style={{ height: "calc(100% - 36px)" }}>
+            <AnimatePresence>
+              {isLoading && (
+                <motion.div
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0 z-20 flex items-center justify-center"
+                  style={{ background: "rgb(var(--color-bg-secondary))" }}
+                >
+                  <motion.div
+                    className="w-10 h-10 rounded-full"
+                    style={{
+                      borderColor: "rgb(var(--color-accent))",
+                      borderTopColor: "transparent",
+                      borderWidth: "3px",
+                      borderStyle: "solid"
+                    }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {currentProject.image && (
+              <motion.img
+                key={currentProject.image}
+                src={currentProject.image}
+                alt={currentProject.title}
+                className="w-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                draggable={false}
+                onLoad={() => setIsLoading(false)}
+              />
+            )}
+
+            {/* Scroll hint */}
+            <motion.div
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-xs font-medium"
+              style={{
+                background: "rgba(var(--color-bg-primary), 0.9)",
+                color: "rgb(var(--color-text-secondary))",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+              }}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
+              transition={{ delay: 2, duration: 0.5 }}
+            >
+              Scroll to explore
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Laptop base/keyboard */}
+      <div
+        className="relative h-3 sm:h-4 rounded-b-xl"
+        style={{
+          background: "linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)",
+          boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
+        }}
+      >
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-16 sm:w-24 h-1 rounded-b"
+          style={{ background: "#2d2d2d" }}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="relative">
-      {/* Main Container */}
-      <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+      <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
 
         {/* Project Selector */}
         <div className="w-full lg:flex-1 lg:max-w-md order-1 lg:order-1">
@@ -215,68 +315,84 @@ export default function InteractivePhone({ projects }: Props) {
             </h2>
             <p className="mb-8 text-sm sm:text-base leading-relaxed"
                style={{ color: "rgb(var(--color-text-secondary))" }}>
-              Interact with live websites we've built. Navigate, scroll, and explore
-              just like you would on your own phone.
+              Explore live websites and design concepts. Navigate, scroll, and interact with our projects.
             </p>
 
             {/* Project List */}
-            <div className="space-y-3">
-              {projects.map((project, index) => (
-                <motion.button
-                  key={index}
-                  onClick={() => handleProjectChange(index)}
-                  className="w-full p-4 sm:p-5 rounded-2xl text-left transition-all duration-300"
-                  style={{
-                    background: activeProject === index
-                      ? "rgba(var(--color-accent), 0.12)"
-                      : "rgb(var(--color-bg-tertiary))",
-                    border: activeProject === index
-                      ? "2px solid rgb(var(--color-accent))"
-                      : "2px solid transparent"
-                  }}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <span className="text-xs font-semibold uppercase tracking-wider"
-                            style={{ color: "rgb(var(--color-accent))" }}>
-                        {project.category}
-                      </span>
-                      <h3 className="text-base sm:text-lg font-semibold mt-1 truncate"
-                          style={{ color: "rgb(var(--color-text-primary))" }}>
-                        {project.title}
-                      </h3>
-                      {project.description && (
-                        <p className="text-sm mt-1 truncate"
-                           style={{ color: "rgb(var(--color-text-secondary))" }}>
-                          {project.description}
-                        </p>
-                      )}
+            <div className="space-y-3 max-h-[400px] overflow-y-auto hide-scrollbar pr-2">
+              {projects.map((project, index) => {
+                const isDesign = project.type === "design" || !!project.image;
+                return (
+                  <motion.button
+                    key={index}
+                    onClick={() => handleProjectChange(index)}
+                    className="w-full p-4 sm:p-5 rounded-2xl text-left transition-all duration-300"
+                    style={{
+                      background: activeProject === index
+                        ? "rgba(var(--color-accent), 0.12)"
+                        : "rgb(var(--color-bg-tertiary))",
+                      border: activeProject === index
+                        ? "2px solid rgb(var(--color-accent))"
+                        : "2px solid transparent"
+                    }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold uppercase tracking-wider"
+                                style={{ color: "rgb(var(--color-accent))" }}>
+                            {project.category}
+                          </span>
+                          {/* Type badge */}
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                            isDesign
+                              ? "bg-purple-500/20 text-purple-400"
+                              : "bg-green-500/20 text-green-400"
+                          }`}>
+                            {isDesign ? "Design" : "Live"}
+                          </span>
+                        </div>
+                        <h3 className="text-base sm:text-lg font-semibold mt-1 truncate"
+                            style={{ color: "rgb(var(--color-text-primary))" }}>
+                          {project.title}
+                        </h3>
+                        {project.description && (
+                          <p className="text-sm mt-1 truncate"
+                             style={{ color: "rgb(var(--color-text-secondary))" }}>
+                            {project.description}
+                          </p>
+                        )}
+                      </div>
+                      <motion.div
+                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{
+                          background: activeProject === index
+                            ? "rgb(var(--color-accent))"
+                            : "rgb(var(--color-bg-secondary))",
+                          color: activeProject === index ? "#fff" : "rgb(var(--color-text-tertiary))"
+                        }}
+                        animate={{ scale: activeProject === index ? 1 : 0.9 }}
+                      >
+                        {activeProject === index ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : isDesign ? (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                          </svg>
+                        )}
+                      </motion.div>
                     </div>
-                    <motion.div
-                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{
-                        background: activeProject === index
-                          ? "rgb(var(--color-accent))"
-                          : "rgb(var(--color-bg-secondary))",
-                        color: activeProject === index
-                          ? "#fff"
-                          : "rgb(var(--color-text-tertiary))"
-                      }}
-                      animate={{ scale: activeProject === index ? 1 : 0.9 }}
-                    >
-                      {activeProject === index ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <span className="text-sm font-bold">{index + 1}</span>
-                      )}
-                    </motion.div>
-                  </div>
-                </motion.button>
-              ))}
+                  </motion.button>
+                );
+              })}
             </div>
 
             {/* Hint */}
@@ -286,19 +402,29 @@ export default function InteractivePhone({ projects }: Props) {
                    style={{ color: "rgb(var(--color-accent))" }}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
               </svg>
-              <span>Click inside the phone to interact</span>
+              <span>{isDesignProject ? "Scroll inside to explore the design" : "Click inside the phone to interact"}</span>
             </div>
           </motion.div>
         </div>
 
-        {/* Phone Display - Normal View */}
-        <div className="relative order-2 lg:order-2">
+        {/* Device Display - Morphs between Phone and Desktop */}
+        <div className="relative order-2 lg:order-2 flex justify-center">
           {/* Glow Effect */}
           <div className="absolute -inset-6 sm:-inset-10 rounded-[60px] blur-3xl opacity-25 pointer-events-none"
                style={{ background: "rgb(var(--color-accent))" }} />
 
           <div className="relative">
-            <PhoneFrame />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={isDesignProject ? "desktop" : "phone"}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+              >
+                {isDesignProject ? <DesktopFrame /> : <PhoneFrame />}
+              </motion.div>
+            </AnimatePresence>
 
             {/* Expand Button */}
             <motion.button
@@ -323,7 +449,7 @@ export default function InteractivePhone({ projects }: Props) {
         </div>
       </div>
 
-      {/* Fullscreen Modal - Elegant Design */}
+      {/* Fullscreen Modal */}
       <AnimatePresence>
         {isFullscreen && (
           <motion.div
@@ -333,7 +459,6 @@ export default function InteractivePhone({ projects }: Props) {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[100]"
             style={{
-              // Handle iOS safe area (notch/status bar)
               paddingTop: "env(safe-area-inset-top)",
               paddingBottom: "env(safe-area-inset-bottom)",
               paddingLeft: "env(safe-area-inset-left)",
@@ -341,7 +466,6 @@ export default function InteractivePhone({ projects }: Props) {
               background: "#000",
             }}
           >
-            {/* Backdrop with blur */}
             <div
               className="absolute inset-0"
               style={{
@@ -352,31 +476,37 @@ export default function InteractivePhone({ projects }: Props) {
               onClick={() => setIsFullscreen(false)}
             />
 
-            {/* Phone - TRUE center on all devices */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4 sm:p-8">
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="pointer-events-auto"
+                className="pointer-events-auto w-full max-w-4xl"
               >
-                <PhoneFrame isFullscreenMode />
+                {isDesignProject ? <DesktopFrame isFullscreenMode /> : <PhoneFrame isFullscreenMode />}
               </motion.div>
             </div>
 
-            {/* Header - Overlaid at top */}
+            {/* Header */}
             <div
               className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 sm:p-6 z-10"
               style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
             >
               <div className="text-white">
-                <p className="text-xs sm:text-sm font-medium opacity-60 uppercase tracking-wider">
-                  {currentProject.category}
-                </p>
-                <h3 className="text-lg sm:text-xl font-bold">
-                  {currentProject.title}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs sm:text-sm font-medium opacity-60 uppercase tracking-wider">
+                    {currentProject.category}
+                  </p>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                    isDesignProject
+                      ? "bg-purple-500/30 text-purple-300"
+                      : "bg-green-500/30 text-green-300"
+                  }`}>
+                    {isDesignProject ? "Design" : "Live"}
+                  </span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold">{currentProject.title}</h3>
               </div>
               <motion.button
                 onClick={() => setIsFullscreen(false)}
@@ -391,7 +521,7 @@ export default function InteractivePhone({ projects }: Props) {
               </motion.button>
             </div>
 
-            {/* Footer hint - Overlaid at bottom */}
+            {/* Footer hint */}
             <div
               className="absolute bottom-0 left-0 right-0 pb-4 sm:pb-6 text-center z-10"
               style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
