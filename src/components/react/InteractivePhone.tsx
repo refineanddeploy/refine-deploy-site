@@ -303,32 +303,17 @@ export default function InteractivePhone({ projects }: Props) {
 
   return (
     <div className="relative">
-      {/* Mobile Layout: Device first, then compact pills */}
+      {/* Mobile Layout: Pills first, then device */}
       <div className="lg:hidden">
-        {/* Device Display */}
-        <div className="relative flex justify-center mb-6">
-          {/* Glow Effect */}
-          <div className="absolute -inset-4 rounded-[40px] blur-2xl opacity-20 pointer-events-none"
-               style={{ background: "rgb(var(--color-accent))" }} />
+        {/* Project Selector Pills - ABOVE device */}
+        <div className="mb-6">
+          {/* Label */}
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3 text-center"
+             style={{ color: "rgb(var(--color-text-tertiary))" }}>
+            Select a Project
+          </p>
 
-          <div className="relative w-full flex justify-center">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={isDesignProject ? "desktop" : "phone"}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="w-full flex justify-center"
-              >
-                {isDesignProject ? <DesktopFrame /> : <PhoneFrame />}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Compact Horizontal Project Pills */}
-        <div className="mt-4">
+          {/* Horizontal scrolling pills */}
           <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
             {projects.map((project, index) => {
               const isDesign = project.type === "design" || !!project.image;
@@ -372,37 +357,59 @@ export default function InteractivePhone({ projects }: Props) {
             key={activeProject}
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 text-center"
+            className="mt-3 text-center"
           >
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1"
+            <p className="text-xs font-semibold uppercase tracking-wider"
                style={{ color: "rgb(var(--color-accent))" }}>
               {currentProject.category}
             </p>
             {currentProject.description && (
-              <p className="text-sm" style={{ color: "rgb(var(--color-text-secondary))" }}>
+              <p className="text-sm mt-0.5" style={{ color: "rgb(var(--color-text-secondary))" }}>
                 {currentProject.description}
               </p>
             )}
           </motion.div>
+        </div>
 
-          {/* Fullscreen button for mobile */}
-          <div className="flex justify-center mt-4">
-            <motion.button
-              onClick={() => setIsFullscreen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium"
-              style={{
-                color: "rgb(var(--color-text-primary))",
-                background: "rgb(var(--color-bg-tertiary))",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-              </svg>
-              Fullscreen
-            </motion.button>
+        {/* Device Display */}
+        <div className="relative flex justify-center">
+          {/* Glow Effect */}
+          <div className="absolute -inset-4 rounded-[40px] blur-2xl opacity-20 pointer-events-none"
+               style={{ background: "rgb(var(--color-accent))" }} />
+
+          <div className="relative w-full flex justify-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={isDesignProject ? "desktop" : "phone"}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="w-full flex justify-center"
+              >
+                {isDesignProject ? <DesktopFrame /> : <PhoneFrame />}
+              </motion.div>
+            </AnimatePresence>
           </div>
+        </div>
+
+        {/* Fullscreen button for mobile */}
+        <div className="flex justify-center mt-6">
+          <motion.button
+            onClick={() => setIsFullscreen(true)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium"
+            style={{
+              color: "rgb(var(--color-text-primary))",
+              background: "rgb(var(--color-bg-tertiary))",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+            }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+            </svg>
+            Fullscreen
+          </motion.button>
         </div>
       </div>
 
