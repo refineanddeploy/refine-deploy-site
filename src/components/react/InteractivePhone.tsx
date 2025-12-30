@@ -180,22 +180,26 @@ export default function InteractivePhone({ projects }: Props) {
 
   // Desktop/Laptop Frame Component
   const DesktopFrame = ({ isFullscreenMode = false }: { isFullscreenMode?: boolean }) => (
-    <div className={`relative ${isFullscreenMode ? "w-full max-w-3xl" : "w-full max-w-2xl"}`}>
+    <div className={`relative w-full ${
+      isFullscreenMode
+        ? "max-w-4xl"
+        : "max-w-[calc(100vw-32px)] sm:max-w-[calc(100vw-64px)] lg:max-w-3xl xl:max-w-4xl"
+    }`}>
       {/* Screen bezel */}
       <div
-        className="rounded-t-xl p-2 sm:p-3"
+        className="rounded-t-xl sm:rounded-t-2xl p-1.5 sm:p-2 md:p-3"
         style={{
           background: "linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%)",
           boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)"
         }}
       >
         {/* Camera dot */}
-        <div className="absolute top-2 sm:top-3 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-gray-700" />
+        <div className="absolute top-1.5 sm:top-2 md:top-3 left-1/2 -translate-x-1/2 w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-gray-700" />
 
         {/* Screen content area */}
         <div
-          className="relative bg-gray-900 rounded-lg overflow-hidden"
-          style={{ aspectRatio: "16/10" }}
+          className="relative bg-gray-900 rounded-md sm:rounded-lg overflow-hidden"
+          style={{ aspectRatio: "16/11" }}
         >
           {/* Browser chrome */}
           <div
@@ -283,14 +287,14 @@ export default function InteractivePhone({ projects }: Props) {
 
       {/* Laptop base/keyboard */}
       <div
-        className="relative h-3 sm:h-4 rounded-b-xl"
+        className="relative h-2 sm:h-3 md:h-4 rounded-b-xl sm:rounded-b-2xl"
         style={{
           background: "linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)",
           boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
         }}
       >
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-16 sm:w-24 h-1 rounded-b"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-12 sm:w-16 md:w-24 h-0.5 sm:h-1 rounded-b"
           style={{ background: "#2d2d2d" }}
         />
       </div>
@@ -299,26 +303,129 @@ export default function InteractivePhone({ projects }: Props) {
 
   return (
     <div className="relative">
-      <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+      {/* Mobile Layout: Device first, then compact pills */}
+      <div className="lg:hidden">
+        {/* Device Display */}
+        <div className="relative flex justify-center mb-6">
+          {/* Glow Effect */}
+          <div className="absolute -inset-4 rounded-[40px] blur-2xl opacity-20 pointer-events-none"
+               style={{ background: "rgb(var(--color-accent))" }} />
 
+          <div className="relative w-full flex justify-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={isDesignProject ? "desktop" : "phone"}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="w-full flex justify-center"
+              >
+                {isDesignProject ? <DesktopFrame /> : <PhoneFrame />}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Compact Horizontal Project Pills */}
+        <div className="mt-4">
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
+            {projects.map((project, index) => {
+              const isDesign = project.type === "design" || !!project.image;
+              return (
+                <motion.button
+                  key={index}
+                  onClick={() => handleProjectChange(index)}
+                  className="flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                  style={{
+                    background: activeProject === index
+                      ? "rgb(var(--color-accent))"
+                      : "rgb(var(--color-bg-tertiary))",
+                    color: activeProject === index
+                      ? "#fff"
+                      : "rgb(var(--color-text-primary))",
+                    border: activeProject === index
+                      ? "2px solid rgb(var(--color-accent))"
+                      : "2px solid transparent"
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="flex items-center gap-1.5">
+                    {isDesign ? (
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                      </svg>
+                    )}
+                    {project.title}
+                  </span>
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {/* Current project info */}
+          <motion.div
+            key={activeProject}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 text-center"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wider mb-1"
+               style={{ color: "rgb(var(--color-accent))" }}>
+              {currentProject.category}
+            </p>
+            {currentProject.description && (
+              <p className="text-sm" style={{ color: "rgb(var(--color-text-secondary))" }}>
+                {currentProject.description}
+              </p>
+            )}
+          </motion.div>
+
+          {/* Fullscreen button for mobile */}
+          <div className="flex justify-center mt-4">
+            <motion.button
+              onClick={() => setIsFullscreen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium"
+              style={{
+                color: "rgb(var(--color-text-primary))",
+                background: "rgb(var(--color-bg-tertiary))",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+              </svg>
+              Fullscreen
+            </motion.button>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Layout: Side by side */}
+      <div className="hidden lg:flex lg:flex-row items-center gap-16">
         {/* Project Selector */}
-        <div className="w-full lg:flex-1 lg:max-w-md order-1 lg:order-1">
+        <div className="lg:flex-1 lg:max-w-md">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4"
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4"
                 style={{ color: "rgb(var(--color-text-primary))" }}>
               Experience Our Work
             </h2>
-            <p className="mb-8 text-sm sm:text-base leading-relaxed"
+            <p className="mb-8 text-base leading-relaxed"
                style={{ color: "rgb(var(--color-text-secondary))" }}>
               Explore live websites and design concepts. Navigate, scroll, and interact with our projects.
             </p>
 
-            {/* Project List */}
+            {/* Project List - Desktop */}
             <div className="space-y-3 max-h-[400px] overflow-y-auto hide-scrollbar pr-2">
               {projects.map((project, index) => {
                 const isDesign = project.type === "design" || !!project.image;
@@ -326,7 +433,7 @@ export default function InteractivePhone({ projects }: Props) {
                   <motion.button
                     key={index}
                     onClick={() => handleProjectChange(index)}
-                    className="w-full p-4 sm:p-5 rounded-2xl text-left transition-all duration-300"
+                    className="w-full p-5 rounded-2xl text-left transition-all duration-300"
                     style={{
                       background: activeProject === index
                         ? "rgba(var(--color-accent), 0.12)"
@@ -345,7 +452,6 @@ export default function InteractivePhone({ projects }: Props) {
                                 style={{ color: "rgb(var(--color-accent))" }}>
                             {project.category}
                           </span>
-                          {/* Type badge */}
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
                             isDesign
                               ? "bg-purple-500/20 text-purple-400"
@@ -354,7 +460,7 @@ export default function InteractivePhone({ projects }: Props) {
                             {isDesign ? "Design" : "Live"}
                           </span>
                         </div>
-                        <h3 className="text-base sm:text-lg font-semibold mt-1 truncate"
+                        <h3 className="text-lg font-semibold mt-1 truncate"
                             style={{ color: "rgb(var(--color-text-primary))" }}>
                           {project.title}
                         </h3>
@@ -396,7 +502,7 @@ export default function InteractivePhone({ projects }: Props) {
             </div>
 
             {/* Hint */}
-            <div className="hidden sm:flex mt-6 items-center gap-2 text-sm"
+            <div className="flex mt-6 items-center gap-2 text-sm"
                  style={{ color: "rgb(var(--color-text-tertiary))" }}>
               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
                    style={{ color: "rgb(var(--color-accent))" }}>
@@ -407,10 +513,10 @@ export default function InteractivePhone({ projects }: Props) {
           </motion.div>
         </div>
 
-        {/* Device Display - Morphs between Phone and Desktop */}
-        <div className="relative order-2 lg:order-2 flex justify-center">
+        {/* Device Display - Desktop */}
+        <div className="relative flex justify-center flex-1">
           {/* Glow Effect */}
-          <div className="absolute -inset-6 sm:-inset-10 rounded-[60px] blur-3xl opacity-25 pointer-events-none"
+          <div className="absolute -inset-10 rounded-[60px] blur-3xl opacity-25 pointer-events-none"
                style={{ background: "rgb(var(--color-accent))" }} />
 
           <div className="relative">
