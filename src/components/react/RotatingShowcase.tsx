@@ -173,7 +173,7 @@ export default function RotatingShowcase({
                        transition-transform duration-200 hover:scale-110 active:scale-95"
             style={{
               position: "absolute",
-              left: "-1.5cm",
+              left: "0.5rem",
               top: "32%",
               marginTop: "-1.125rem",
               width: "2.25rem",
@@ -201,7 +201,7 @@ export default function RotatingShowcase({
                        transition-transform duration-200 hover:scale-110 active:scale-95"
             style={{
               position: "absolute",
-              right: "-1.5cm",
+              right: "0.5rem",
               top: "32%",
               marginTop: "-1.125rem",
               width: "2.25rem",
