@@ -81,39 +81,88 @@ export default function RotatingShowcase({
   }, [goTo, index, images.length]);
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      {/* Bottom layer: every image stays mounted so nothing has to load mid-transition. */}
-      {images.map((img, i) => (
-        <img
-          key={img.src}
-          src={img.src}
-          alt={img.title}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-          style={{
-            opacity: i === index ? 1 : 0,
-            zIndex: 0,
-          }}
-          loading="eager"
-          decoding="async"
-        />
-      ))}
+    // Outer wrapper has NO overflow-hidden so the prev/next buttons can
+    // extend beyond the image area. The image clip (inner div) is what
+    // actually clips the rotating images to rounded corners.
+    <div className="relative w-full h-full" style={{ overflow: "visible", borderRadius: "inherit" }}>
+      <div
+        className="absolute inset-0"
+        style={{ overflow: "hidden", borderRadius: "inherit" }}
+      >
+        {/* Bottom layer: every image stays mounted so nothing has to load mid-transition. */}
+        {images.map((img, i) => (
+          <img
+            key={img.src}
+            src={img.src}
+            alt={img.title}
+            className="absolute inset-0 w-full h-full object-cover object-top"
+            style={{
+              opacity: i === index ? 1 : 0,
+              zIndex: 0,
+            }}
+            loading="eager"
+            decoding="async"
+          />
+        ))}
 
-      {/* Top layer: a copy of the previous image, fading out on top of the new one. */}
-      {prev !== null && prev !== index && (
-        <motion.img
-          key={`fade-${prev}-${index}`}
-          src={images[prev].src}
-          alt={images[prev].title}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-          style={{ zIndex: 1, pointerEvents: "none" }}
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 0 }}
-          transition={{ duration: FADE_MS / 1000, ease: "easeInOut" }}
-          loading="eager"
-          decoding="async"
-        />
-      )}
+        {/* Top layer: a copy of the previous image, fading out on top of the new one. */}
+        {prev !== null && prev !== index && (
+          <motion.img
+            key={`fade-${prev}-${index}`}
+            src={images[prev].src}
+            alt={images[prev].title}
+            className="absolute inset-0 w-full h-full object-cover object-top"
+            style={{ zIndex: 1, pointerEvents: "none" }}
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: FADE_MS / 1000, ease: "easeInOut" }}
+            loading="eager"
+            decoding="async"
+          />
+        )}
 
+        {showCaption && (
+          <div
+            className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/70 via-black/40 to-transparent"
+            style={{ zIndex: 2 }}
+          >
+            <p className="text-white text-xs sm:text-sm font-semibold leading-tight">
+              {images[index].title}
+            </p>
+            {images[index].category && (
+              <p className="text-white/80 text-[10px] sm:text-xs mt-0.5">
+                {images[index].category}
+              </p>
+            )}
+          </div>
+        )}
+
+        {images.length > 1 && (
+          <div className="absolute top-2 right-2 flex gap-1" style={{ zIndex: 2 }}>
+            {images.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => goTo(i)}
+                aria-label={`Go to image ${i + 1}`}
+                className="h-1.5 rounded-full transition-all duration-500 hover:opacity-100"
+                style={{
+                  backgroundColor:
+                    i === index ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.4)",
+                  width: i === index ? "0.875rem" : "0.375rem",
+                  cursor: "pointer",
+                  border: "none",
+                  padding: 0,
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Prev / Next buttons rendered OUTSIDE the image clip so they can
+          extend past the rounded edges of the showcase. Positioned 1.5cm
+          beyond the showcase's left/right bounds. */}
       {showControls && images.length > 1 && (
         <>
           <button
@@ -124,17 +173,18 @@ export default function RotatingShowcase({
                        transition-transform duration-200 hover:scale-110 active:scale-95"
             style={{
               position: "absolute",
-              left: "0.5rem",
+              left: "-1.5cm",
               top: "32%",
               marginTop: "-1.125rem",
               width: "2.25rem",
               height: "2.25rem",
               zIndex: 5,
-              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
               backdropFilter: "blur(4px)",
               WebkitBackdropFilter: "blur(4px)",
               border: "1px solid rgba(255,255,255,0.25)",
               cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
@@ -151,17 +201,18 @@ export default function RotatingShowcase({
                        transition-transform duration-200 hover:scale-110 active:scale-95"
             style={{
               position: "absolute",
-              right: "0.5rem",
+              right: "-1.5cm",
               top: "32%",
               marginTop: "-1.125rem",
               width: "2.25rem",
               height: "2.25rem",
               zIndex: 5,
-              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
               backdropFilter: "blur(4px)",
               WebkitBackdropFilter: "blur(4px)",
               border: "1px solid rgba(255,255,255,0.25)",
               cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
@@ -171,44 +222,6 @@ export default function RotatingShowcase({
             </svg>
           </button>
         </>
-      )}
-
-      {showCaption && (
-        <div
-          className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/70 via-black/40 to-transparent"
-          style={{ zIndex: 2 }}
-        >
-          <p className="text-white text-xs sm:text-sm font-semibold leading-tight">
-            {images[index].title}
-          </p>
-          {images[index].category && (
-            <p className="text-white/80 text-[10px] sm:text-xs mt-0.5">
-              {images[index].category}
-            </p>
-          )}
-        </div>
-      )}
-
-      {images.length > 1 && (
-        <div className="absolute top-2 right-2 flex gap-1" style={{ zIndex: 2 }}>
-          {images.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => goTo(i)}
-              aria-label={`Go to image ${i + 1}`}
-              className="h-1.5 rounded-full transition-all duration-500 hover:opacity-100"
-              style={{
-                backgroundColor:
-                  i === index ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.4)",
-                width: i === index ? "0.875rem" : "0.375rem",
-                cursor: "pointer",
-                border: "none",
-                padding: 0,
-              }}
-            />
-          ))}
-        </div>
       )}
     </div>
   );
