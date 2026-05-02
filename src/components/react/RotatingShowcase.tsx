@@ -120,18 +120,26 @@ export default function RotatingShowcase({
             type="button"
             onClick={goPrev}
             aria-label="Previous image"
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9
-                       rounded-full flex items-center justify-center text-white
-                       transition-all duration-200 hover:scale-110 active:scale-95"
+            className="rounded-full flex items-center justify-center text-white
+                       transition-transform duration-200 hover:scale-110 active:scale-95"
             style={{
-              zIndex: 3,
-              backgroundColor: "rgba(0, 0, 0, 0.45)",
+              position: "absolute",
+              left: "0.5rem",
+              top: "50%",
+              marginTop: "-1.125rem",
+              width: "2.25rem",
+              height: "2.25rem",
+              zIndex: 5,
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
               backdropFilter: "blur(4px)",
               WebkitBackdropFilter: "blur(4px)",
+              border: "1px solid rgba(255,255,255,0.25)",
+              cursor: "pointer",
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                 strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 sm:w-5 sm:h-5">
+                 strokeLinecap="round" strokeLinejoin="round"
+                 style={{ width: "1.125rem", height: "1.125rem" }}>
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
@@ -139,18 +147,26 @@ export default function RotatingShowcase({
             type="button"
             onClick={goNext}
             aria-label="Next image"
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9
-                       rounded-full flex items-center justify-center text-white
-                       transition-all duration-200 hover:scale-110 active:scale-95"
+            className="rounded-full flex items-center justify-center text-white
+                       transition-transform duration-200 hover:scale-110 active:scale-95"
             style={{
-              zIndex: 3,
-              backgroundColor: "rgba(0, 0, 0, 0.45)",
+              position: "absolute",
+              right: "0.5rem",
+              top: "50%",
+              marginTop: "-1.125rem",
+              width: "2.25rem",
+              height: "2.25rem",
+              zIndex: 5,
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
               backdropFilter: "blur(4px)",
               WebkitBackdropFilter: "blur(4px)",
+              border: "1px solid rgba(255,255,255,0.25)",
+              cursor: "pointer",
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                 strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 sm:w-5 sm:h-5">
+                 strokeLinecap="round" strokeLinejoin="round"
+                 style={{ width: "1.125rem", height: "1.125rem" }}>
               <path d="M9 18l6-6-6-6" />
             </svg>
           </button>
