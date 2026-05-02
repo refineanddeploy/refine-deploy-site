@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface NavLink {
@@ -15,6 +16,12 @@ interface Props {
 export default function MobileMenu({ navLinks }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const panelRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Detect theme
   useEffect(() => {
@@ -26,6 +33,17 @@ export default function MobileMenu({ navLinks }: Props) {
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return () => observer.disconnect();
   }, []);
+
+  // Force solid background on the panel via setProperty('important') —
+  // beats any cached CSS, framer-motion inline-style merge, or theme race
+  useEffect(() => {
+    if (!isOpen) return;
+    const el = panelRef.current;
+    if (!el) return;
+    el.style.setProperty("background-color", isDark ? "#111827" : "#ffffff", "important");
+    el.style.setProperty("backdrop-filter", "none", "important");
+    el.style.setProperty("-webkit-backdrop-filter", "none", "important");
+  }, [isOpen, isDark]);
 
   // Lock body scroll when menu is open
   useEffect(() => {
@@ -76,10 +94,12 @@ export default function MobileMenu({ navLinks }: Props) {
         />
       </button>
 
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
+      {/* Mobile Menu Overlay — portaled to <body> so it escapes any
+          ancestor containing-block trap (e.g. backdrop-filter on the header) */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <>
             {/* Backdrop with blur */}
             <motion.div
               className="fixed inset-0 z-[55]"
@@ -93,30 +113,48 @@ export default function MobileMenu({ navLinks }: Props) {
 
             {/* Slide-in Panel */}
             <motion.nav
-              className="fixed top-0 right-0 h-full w-[85vw] max-w-sm z-[58] shadow-2xl mobile-menu-panel"
+              ref={panelRef as any}
+              className="fixed z-[58] shadow-2xl overflow-hidden"
               style={{
-                borderLeft: "1px solid rgba(var(--color-border), 0.2)",
+                width: "min(72vw, 17rem)",
+                top: "1rem",
+                right: "1rem",
+                maxHeight: "calc(100vh - 8rem)",
+                borderRadius: "1.5rem",
+                border: "1px solid rgba(var(--color-border), 0.25)",
               }}
-              initial={{ x: "100%" }}
+              initial={{ x: "120%" }}
               animate={{ x: 0 }}
-              exit={{ x: "100%" }}
+              exit={{ x: "120%" }}
               transition={{
                 type: "spring",
                 damping: 30,
                 stiffness: 300,
               }}
             >
-              <div className="flex flex-col h-full pt-24 pb-8 px-8 mobile-menu-panel">
+              {/* Dedicated solid background layer — cannot be made transparent */}
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundColor: isDark ? "#111827" : "#ffffff",
+                  zIndex: 0,
+                }}
+              />
+              <div className="relative flex flex-col pt-16 pb-5 px-5" style={{ zIndex: 1 }}>
                 {/* Navigation Links */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col">
                   {navLinks.map((link, index) => (
                     <motion.a
                       key={link.href}
                       href={link.href}
-                      className="py-4 px-2 text-xl font-semibold rounded-xl transition-all duration-200"
+                      className="py-2.5 px-2 text-base font-semibold rounded-lg transition-all duration-200"
                       style={{
                         color: "rgb(var(--color-text-primary))",
-                        borderBottom: "1px solid rgba(var(--color-border), 0.1)"
+                        borderBottom: index === navLinks.length - 1
+                          ? "none"
+                          : "1px solid rgba(var(--color-border), 0.1)",
                       }}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -139,7 +177,7 @@ export default function MobileMenu({ navLinks }: Props) {
                 {/* CTA Button */}
                 <motion.a
                   href="/contact"
-                  className="mt-10 py-4 text-center rounded-full text-lg font-semibold
+                  className="mt-4 py-3 text-center rounded-full text-sm font-semibold
                              hover:opacity-90 transition-opacity"
                   style={{
                     background: "rgb(var(--color-accent))",
@@ -152,29 +190,13 @@ export default function MobileMenu({ navLinks }: Props) {
                 >
                   Get Started
                 </motion.a>
-
-                {/* Spacer */}
-                <div className="flex-1" />
-
-                {/* Bottom branding */}
-                <motion.div
-                  className="text-center"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.35, duration: 0.3 }}
-                >
-                  <p className="text-sm font-medium" style={{ color: "rgb(var(--color-text-secondary))" }}>
-                    Refine & Deploy
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "rgb(var(--color-text-tertiary))" }}>
-                    Web Design & Development
-                  </p>
-                </motion.div>
               </div>
             </motion.nav>
-          </>
-        )}
-      </AnimatePresence>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }

@@ -4,41 +4,57 @@ import BaseLayout from '@layouts/BaseLayout.astro';
 const services = [
   {
     title: "Web Design",
-    description: "[WEB_DESIGN_DESCRIPTION]",
+    description: "Pixel-perfect interfaces designed around your audience and brand. We craft layouts that feel intuitive on every device—clear, considered, and unmistakably yours.",
     icon: "design",
   },
   {
     title: "Web Development",
-    description: "[WEB_DEV_DESCRIPTION]",
+    description: "Modern, hand-written code built on frameworks like Astro, React, and Next.js. Fast, accessible, and structured to grow with your business—not against it.",
     icon: "dev",
   },
   {
     title: "E-commerce Solutions",
-    description: "[ECOMMERCE_DESCRIPTION]",
+    description: "Conversion-focused storefronts with secure checkout, smooth product browsing, and clean inventory management. Built to turn visitors into repeat customers.",
     icon: "cart",
   },
   {
     title: "SEO Optimization",
-    description: "[SEO_DESCRIPTION]",
+    description: "Technical and on-page SEO so the right customers can find you. Clean markup, fast Core Web Vitals, and structured content that earns its place in search results.",
     icon: "search",
   },
   {
     title: "Maintenance & Support",
-    description: "[MAINTENANCE_DESCRIPTION]",
+    description: "Ongoing care once you're live: security patches, content updates, performance tuning, and rapid fixes when something breaks. We stay on call so you don't have to.",
     icon: "support",
   },
   {
     title: "Performance Optimization",
-    description: "[PERFORMANCE_DESCRIPTION]",
+    description: "Lightning-fast load times through image optimization, code splitting, smart caching, and lean infrastructure. Every millisecond compounds into better conversions.",
     icon: "speed",
   },
 ];
 
 const processSteps = [
-  { number: "1", title: "Discovery", description: "[PROCESS_STEP_1]" },
-  { number: "2", title: "Design", description: "[PROCESS_STEP_2]" },
-  { number: "3", title: "Development", description: "[PROCESS_STEP_3]" },
-  { number: "4", title: "Launch", description: "[PROCESS_STEP_4]" },
+  {
+    number: "1",
+    title: "Discovery",
+    description: "We start with a short kickoff call to understand your goals, audience, and constraints. You leave with a clear scope, timeline, and definition of done—no guesswork.",
+  },
+  {
+    number: "2",
+    title: "Design",
+    description: "Wireframes and high-fidelity mockups bring your vision into focus. You review, we iterate—until every screen feels right and every interaction earns its place.",
+  },
+  {
+    number: "3",
+    title: "Development",
+    description: "Designs become reality with clean, modern code. Built mobile-first, optimized for speed, and tested across every major browser before anything ships.",
+  },
+  {
+    number: "4",
+    title: "Launch",
+    description: "We deploy, monitor, and stay close after go-live. Tweaks, training, and post-launch support are included so the handoff feels smooth and the site keeps performing.",
+  },
 ];
 
 // Icon mapping
@@ -59,7 +75,7 @@ const icons: Record<string, string> = {
       <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-primary mb-6">Our Services</h1>
         <p class="text-secondary text-lg sm:text-xl max-w-2xl mx-auto">
-          [SERVICES_HERO_DESCRIPTION]
+          Custom websites engineered to perform. From first sketch to final deployment, we handle the entire journey—design, development, optimization, and the long tail of care that keeps a site great.
         </p>
       </div>
     </div>
@@ -113,7 +129,7 @@ const icons: Record<string, string> = {
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <h2 class="text-white mb-4 sm:mb-6">Ready to Get Started?</h2>
       <p class="text-lg sm:text-xl mb-8 sm:mb-10 max-w-2xl mx-auto opacity-90">
-        [SERVICES_CTA_DESCRIPTION]
+        Tell us about your project and we'll respond within one business day with next steps, a rough timeline, and a transparent quote—no obligations.
       </p>
       <a
         href="/contact"

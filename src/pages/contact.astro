@@ -1,5 +1,9 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
+
+const success = Astro.url.searchParams.get('success') === 'true';
+const formAction = 'https://formsubmit.co/refineanddeploy@gmail.com';
+const redirectTarget = `${Astro.url.origin}/contact?success=true`;
 ---
 
 <BaseLayout title="Contact">
@@ -9,7 +13,7 @@ import BaseLayout from '@layouts/BaseLayout.astro';
       <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-primary mb-6">Get in Touch</h1>
         <p class="text-secondary text-lg sm:text-xl max-w-2xl mx-auto">
-          [CONTACT_HERO_DESCRIPTION]
+          Tell us about your project, your timeline, or just an idea you're kicking around. We read every message and respond with real, useful answers—not auto-replies.
         </p>
       </div>
     </div>
@@ -24,7 +28,34 @@ import BaseLayout from '@layouts/BaseLayout.astro';
           <!-- Contact Form -->
           <div class="card p-6 sm:p-8">
             <h2 class="text-primary mb-6">Send us a message</h2>
-            <form class="space-y-5">
+
+            {success && (
+              <div
+                class="mb-6 p-4 rounded-xl border flex items-start gap-3"
+                style="background: rgba(20, 184, 166, 0.08); border-color: rgba(20, 184, 166, 0.3);"
+              >
+                <svg class="w-5 h-5 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <div>
+                  <p class="font-semibold text-primary text-sm sm:text-base">Message sent!</p>
+                  <p class="text-secondary text-xs sm:text-sm mt-1">Thanks for reaching out — we'll reply within 1 to 2 business days.</p>
+                </div>
+              </div>
+            )}
+
+            <form
+              action={formAction}
+              method="POST"
+              class="space-y-5"
+            >
+              <!-- FormSubmit configuration -->
+              <input type="hidden" name="_subject" value="New inquiry from refineanddeploy.vercel.app" />
+              <input type="hidden" name="_template" value="table" />
+              <input type="hidden" name="_next" value={redirectTarget} />
+              <input type="hidden" name="_captcha" value="false" />
+              <!-- Honeypot anti-spam — bots fill this; humans don't see it -->
+              <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label for="name" class="block text-sm font-medium text-secondary mb-2">
@@ -127,7 +158,7 @@ import BaseLayout from '@layouts/BaseLayout.astro';
                   </div>
                   <div>
                     <h4 class="font-semibold text-primary mb-1">Email</h4>
-                    <p class="text-secondary">[CONTACT_EMAIL]</p>
+                    <a href="mailto:refineanddeploy@gmail.com" class="text-secondary hover:text-accent transition-colors break-all">refineanddeploy@gmail.com</a>
                   </div>
                 </div>
 
@@ -140,7 +171,7 @@ import BaseLayout from '@layouts/BaseLayout.astro';
                   </div>
                   <div>
                     <h4 class="font-semibold text-primary mb-1">Phone</h4>
-                    <p class="text-secondary">[CONTACT_PHONE]</p>
+                    <a href="tel:+12368678113" class="text-secondary hover:text-accent transition-colors">+1 (236) 867-8113</a>
                   </div>
                 </div>
 
@@ -154,27 +185,17 @@ import BaseLayout from '@layouts/BaseLayout.astro';
                   </div>
                   <div>
                     <h4 class="font-semibold text-primary mb-1">Location</h4>
-                    <p class="text-secondary">[CONTACT_LOCATION]</p>
+                    <p class="text-secondary">Vancouver, British Columbia<br/>Working with clients worldwide</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Office Hours -->
-            <div class="card p-5 sm:p-6 bg-accent/5 border-accent/10">
-              <h4 class="font-semibold text-primary mb-3">Office Hours</h4>
-              <div class="space-y-2 text-secondary text-sm sm:text-base">
-                <p>Monday - Friday: [HOURS_WEEKDAY]</p>
-                <p>Saturday: [HOURS_SATURDAY]</p>
-                <p>Sunday: [HOURS_SUNDAY]</p>
-              </div>
-            </div>
-
             <!-- Response Time -->
-            <div class="card p-5 sm:p-6">
+            <div class="card p-5 sm:p-6 bg-accent/5 border-accent/10">
               <h4 class="font-semibold text-primary mb-3">Response Time</h4>
               <p class="text-secondary text-sm sm:text-base">
-                [RESPONSE_TIME_DESCRIPTION]
+                We reply to every message within 1 to 2 business days. If your project is time-sensitive, mention it in your note and we'll prioritize accordingly.
               </p>
             </div>
           </div>
