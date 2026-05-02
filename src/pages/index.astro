@@ -127,9 +127,6 @@ const services = [
           </p>
 
           <div class="flex flex-col sm:flex-row flex-wrap gap-4 justify-center lg:justify-start">
-            <a href="/about" class="btn-primary" style="border: 1px solid #000;">
-              More About Us
-            </a>
             <a href="/portfolio" class="btn-secondary" style="border: 1px solid #000;">
               View Our Work
             </a>
@@ -138,6 +135,9 @@ const services = [
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               Get Started with a Free Consultation
+            </a>
+            <a href="/about" class="btn-primary" style="border: 1px solid #000;">
+              More About Us
             </a>
           </div>
         </div>
@@ -235,6 +235,10 @@ const services = [
   <!-- Interactive Phone Showcase Section -->
   <section class="section-padding bg-primary overflow-hidden">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10 lg:mb-12">
+        <h2 class="text-primary" style="font-weight: 500; letter-spacing: -0.02em;">Interactive Phone</h2>
+        <div class="w-12 h-0.5 bg-accent mx-auto mt-4 rounded-full"></div>
+      </div>
       <InteractivePhone projects={showcaseProjects} client:visible />
     </div>
   </section>
