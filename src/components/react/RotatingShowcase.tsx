@@ -125,7 +125,7 @@ export default function RotatingShowcase({
             style={{
               position: "absolute",
               left: "0.5rem",
-              top: "50%",
+              top: "32%",
               marginTop: "-1.125rem",
               width: "2.25rem",
               height: "2.25rem",
@@ -152,7 +152,7 @@ export default function RotatingShowcase({
             style={{
               position: "absolute",
               right: "0.5rem",
-              top: "50%",
+              top: "32%",
               marginTop: "-1.125rem",
               width: "2.25rem",
               height: "2.25rem",
