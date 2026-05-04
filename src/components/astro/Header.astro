@@ -57,13 +57,13 @@ const currentPath = Astro.url.pathname;
 
           <!-- Theme Toggle - Desktop -->
           <div class="ml-3">
-            <ThemeToggle client:load />
+            <ThemeToggle client:idle />
           </div>
         </nav>
 
         <!-- Mobile: Theme Toggle + Hamburger -->
         <div class="flex items-center gap-2 lg:hidden">
-          <ThemeToggle client:load variant="compact" />
+          <ThemeToggle client:idle variant="compact" />
           <MobileMenu client:load navLinks={navLinks} />
         </div>
 

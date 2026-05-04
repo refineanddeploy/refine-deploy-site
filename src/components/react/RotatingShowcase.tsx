@@ -89,21 +89,27 @@ export default function RotatingShowcase({
         className="absolute inset-0"
         style={{ overflow: "hidden", borderRadius: "inherit" }}
       >
-        {/* Bottom layer: every image stays mounted so nothing has to load mid-transition. */}
-        {images.map((img, i) => (
-          <img
-            key={img.src}
-            src={img.src}
-            alt={img.title}
-            className="absolute inset-0 w-full h-full object-cover object-top"
-            style={{
-              opacity: i === index ? 1 : 0,
-              zIndex: 0,
-            }}
-            loading="eager"
-            decoding="async"
-          />
-        ))}
+        {/* Bottom layer: every image stays mounted so nothing has to load mid-transition.
+            Only the current and next-up images are eager; others are lazy so the
+            browser doesn't fetch all 7 screenshots upfront on first paint. */}
+        {images.map((img, i) => {
+          const isCurrent = i === index;
+          const isNext = i === (index + 1) % images.length;
+          return (
+            <img
+              key={img.src}
+              src={img.src}
+              alt={img.title}
+              className="absolute inset-0 w-full h-full object-cover object-top"
+              style={{
+                opacity: isCurrent ? 1 : 0,
+                zIndex: 0,
+              }}
+              loading={isCurrent || isNext ? "eager" : "lazy"}
+              decoding="async"
+            />
+          );
+        })}
 
         {/* Top layer: a copy of the previous image, fading out on top of the new one. */}
         {prev !== null && prev !== index && (
