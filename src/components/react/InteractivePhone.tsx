@@ -21,7 +21,15 @@ export default function InteractivePhone({ projects }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [hasScrolledPills, setHasScrolledPills] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const pillsScrollRef = useRef<HTMLDivElement>(null);
+
+  const handlePillsScroll = () => {
+    if (!hasScrolledPills && pillsScrollRef.current && pillsScrollRef.current.scrollLeft > 8) {
+      setHasScrolledPills(true);
+    }
+  };
 
   const currentProject = projects[activeProject];
   const isDesignProject = currentProject.type === "design" || !!currentProject.image;
@@ -307,49 +315,103 @@ export default function InteractivePhone({ projects }: Props) {
       <div className="lg:hidden">
         {/* Project Selector Pills - ABOVE device */}
         <div className="mb-6">
-          {/* Label */}
-          <p className="text-xs font-semibold uppercase tracking-wider mb-3 text-center"
-             style={{ color: "rgb(var(--color-text-tertiary))" }}>
-            Select a Project
-          </p>
+          {/* Label with sideways-scroll hint */}
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider"
+               style={{ color: "rgb(var(--color-text-tertiary))" }}>
+              Select a Project
+            </p>
+            <motion.span
+              aria-hidden="true"
+              className="inline-flex items-center"
+              style={{ color: "rgb(var(--color-accent))" }}
+              animate={hasScrolledPills ? { opacity: 0 } : { x: [0, 6, 0], opacity: [0.5, 1, 0.5] }}
+              transition={hasScrolledPills
+                ? { duration: 0.3 }
+                : { duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </motion.span>
+          </div>
 
-          {/* Horizontal scrolling pills */}
-          <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
-            {projects.map((project, index) => {
-              const isDesign = project.type === "design" || !!project.image;
-              return (
-                <motion.button
-                  key={index}
-                  onClick={() => handleProjectChange(index)}
-                  className="flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-                  style={{
-                    background: activeProject === index
-                      ? "rgb(var(--color-accent))"
-                      : "rgb(var(--color-bg-tertiary))",
-                    color: activeProject === index
-                      ? "#fff"
-                      : "rgb(var(--color-text-primary))",
-                    border: activeProject === index
-                      ? "2px solid rgb(var(--color-accent))"
-                      : "2px solid transparent"
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="flex items-center gap-1.5">
-                    {isDesign ? (
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-                      </svg>
-                    ) : (
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-                      </svg>
-                    )}
-                    {project.title}
-                  </span>
-                </motion.button>
-              );
-            })}
+          {/* Horizontal scrolling pills with edge fade indicator */}
+          <div className="relative -mx-4">
+            <div
+              ref={pillsScrollRef}
+              onScroll={handlePillsScroll}
+              className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 px-4"
+            >
+              {projects.map((project, index) => {
+                const isDesign = project.type === "design" || !!project.image;
+                return (
+                  <motion.button
+                    key={index}
+                    onClick={() => handleProjectChange(index)}
+                    className="flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                    style={{
+                      background: activeProject === index
+                        ? "rgb(var(--color-accent))"
+                        : "rgb(var(--color-bg-tertiary))",
+                      color: activeProject === index
+                        ? "#fff"
+                        : "rgb(var(--color-text-primary))",
+                      border: activeProject === index
+                        ? "2px solid rgb(var(--color-accent))"
+                        : "2px solid transparent"
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      {isDesign ? (
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                        </svg>
+                      )}
+                      {project.title}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Right-edge fade gradient — fades out once user scrolls */}
+            <motion.div
+              aria-hidden="true"
+              className="pointer-events-none absolute top-0 right-0 h-full w-16"
+              style={{
+                background:
+                  "linear-gradient(to left, rgb(var(--color-bg-primary)) 0%, rgba(var(--color-bg-primary), 0) 100%)"
+              }}
+              animate={{ opacity: hasScrolledPills ? 0 : 1 }}
+              transition={{ duration: 0.4 }}
+            />
+
+            {/* Bouncing chevron at right edge */}
+            <motion.div
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full"
+              style={{
+                background: "rgb(var(--color-accent))",
+                color: "#fff",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+              }}
+              animate={hasScrolledPills
+                ? { opacity: 0, x: 10 }
+                : { opacity: 1, x: [0, 4, 0] }}
+              transition={hasScrolledPills
+                ? { duration: 0.4 }
+                : { x: { duration: 1.2, repeat: Infinity, ease: "easeInOut" }, opacity: { duration: 0.3 } }}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </motion.div>
           </div>
 
           {/* Current project info */}
