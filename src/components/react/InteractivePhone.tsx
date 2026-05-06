@@ -406,22 +406,6 @@ export default function InteractivePhone({ projects }: Props) {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 initial={false}
               />
-              {/* Subtle pulse hint on first render to suggest scrollability */}
-              <motion.div
-                aria-hidden="true"
-                className="absolute top-0 left-0 h-full rounded-full pointer-events-none"
-                style={{
-                  width: `${pillsThumbRatio * 100}%`,
-                  background: "rgb(20, 184, 166)"
-                }}
-                initial={{ opacity: 0.4, x: 0 }}
-                animate={pillsScrollProgress > 0
-                  ? { opacity: 0 }
-                  : { opacity: [0.0, 0.35, 0.0], x: [`0%`, `${(100 / pillsThumbRatio - 100)}%`, `0%`] }}
-                transition={pillsScrollProgress > 0
-                  ? { duration: 0.3 }
-                  : { duration: 2.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.6 }}
-              />
             </div>
           )}
 
@@ -505,8 +489,30 @@ export default function InteractivePhone({ projects }: Props) {
               Explore live websites and design concepts. Navigate, scroll, and interact with our projects.
             </p>
 
-            {/* Project List - Desktop with Apple-style vertical scroll indicator */}
+            {/* Project List - Desktop with Apple-style vertical scroll indicator on the left */}
             <div className="relative flex gap-3">
+              {/* Apple-style vertical scroll indicator (left side) */}
+              {listThumbRatio < 1 && (
+                <div
+                  className="w-1 self-stretch rounded-full overflow-hidden relative shrink-0"
+                  style={{ background: "rgb(var(--color-bg-tertiary))" }}
+                >
+                  <motion.div
+                    className="absolute left-0 top-0 w-full rounded-full"
+                    style={{
+                      height: `${listThumbRatio * 100}%`,
+                      background: "rgb(20, 184, 166)",
+                      boxShadow: "0 0 6px rgba(20, 184, 166, 0.5)"
+                    }}
+                    animate={{
+                      y: `${listScrollProgress * (100 / listThumbRatio - 100)}%`
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    initial={false}
+                  />
+                </div>
+              )}
+
               <div
                 ref={listScrollRef}
                 onScroll={recomputeListScroll}
@@ -585,43 +591,6 @@ export default function InteractivePhone({ projects }: Props) {
                 );
               })}
               </div>
-
-              {/* Apple-style vertical scroll indicator */}
-              {listThumbRatio < 1 && (
-                <div
-                  className="w-1 self-stretch rounded-full overflow-hidden relative shrink-0"
-                  style={{ background: "rgb(var(--color-bg-tertiary))" }}
-                >
-                  <motion.div
-                    className="absolute left-0 top-0 w-full rounded-full"
-                    style={{
-                      height: `${listThumbRatio * 100}%`,
-                      background: "rgb(20, 184, 166)",
-                      boxShadow: "0 0 6px rgba(20, 184, 166, 0.5)"
-                    }}
-                    animate={{
-                      y: `${listScrollProgress * (100 / listThumbRatio - 100)}%`
-                    }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    initial={false}
-                  />
-                  <motion.div
-                    aria-hidden="true"
-                    className="absolute left-0 top-0 w-full rounded-full pointer-events-none"
-                    style={{
-                      height: `${listThumbRatio * 100}%`,
-                      background: "rgb(20, 184, 166)"
-                    }}
-                    initial={{ opacity: 0.4, y: 0 }}
-                    animate={listScrollProgress > 0
-                      ? { opacity: 0 }
-                      : { opacity: [0.0, 0.35, 0.0], y: [`0%`, `${(100 / listThumbRatio - 100)}%`, `0%`] }}
-                    transition={listScrollProgress > 0
-                      ? { duration: 0.3 }
-                      : { duration: 2.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.6 }}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Hint */}
