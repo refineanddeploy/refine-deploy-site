@@ -23,8 +23,11 @@ export default function InteractivePhone({ projects }: Props) {
   const [hasError, setHasError] = useState(false);
   const [pillsScrollProgress, setPillsScrollProgress] = useState(0); // 0 - 1
   const [pillsThumbRatio, setPillsThumbRatio] = useState(1); // visible / total
+  const [listScrollProgress, setListScrollProgress] = useState(0); // 0 - 1
+  const [listThumbRatio, setListThumbRatio] = useState(1); // visible / total
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const pillsScrollRef = useRef<HTMLDivElement>(null);
+  const listScrollRef = useRef<HTMLDivElement>(null);
 
   const recomputePillsScroll = () => {
     const el = pillsScrollRef.current;
@@ -34,9 +37,21 @@ export default function InteractivePhone({ projects }: Props) {
     setPillsScrollProgress(max > 0 ? el.scrollLeft / max : 0);
   };
 
+  const recomputeListScroll = () => {
+    const el = listScrollRef.current;
+    if (!el) return;
+    const max = el.scrollHeight - el.clientHeight;
+    setListThumbRatio(el.scrollHeight > 0 ? Math.min(1, el.clientHeight / el.scrollHeight) : 1);
+    setListScrollProgress(max > 0 ? el.scrollTop / max : 0);
+  };
+
   useEffect(() => {
     recomputePillsScroll();
-    const onResize = () => recomputePillsScroll();
+    recomputeListScroll();
+    const onResize = () => {
+      recomputePillsScroll();
+      recomputeListScroll();
+    };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [projects.length]);
@@ -490,9 +505,14 @@ export default function InteractivePhone({ projects }: Props) {
               Explore live websites and design concepts. Navigate, scroll, and interact with our projects.
             </p>
 
-            {/* Project List - Desktop */}
-            <div className="space-y-3 max-h-[400px] overflow-y-auto hide-scrollbar pr-2">
-              {projects.map((project, index) => {
+            {/* Project List - Desktop with Apple-style vertical scroll indicator */}
+            <div className="relative flex gap-3">
+              <div
+                ref={listScrollRef}
+                onScroll={recomputeListScroll}
+                className="flex-1 space-y-3 max-h-[400px] overflow-y-auto hide-scrollbar pr-1"
+              >
+                {projects.map((project, index) => {
                 const isDesign = project.type === "design" || !!project.image;
                 return (
                   <motion.button
@@ -564,6 +584,44 @@ export default function InteractivePhone({ projects }: Props) {
                   </motion.button>
                 );
               })}
+              </div>
+
+              {/* Apple-style vertical scroll indicator */}
+              {listThumbRatio < 1 && (
+                <div
+                  className="w-1 self-stretch rounded-full overflow-hidden relative shrink-0"
+                  style={{ background: "rgb(var(--color-bg-tertiary))" }}
+                >
+                  <motion.div
+                    className="absolute left-0 top-0 w-full rounded-full"
+                    style={{
+                      height: `${listThumbRatio * 100}%`,
+                      background: "rgb(20, 184, 166)",
+                      boxShadow: "0 0 6px rgba(20, 184, 166, 0.5)"
+                    }}
+                    animate={{
+                      y: `${listScrollProgress * (100 / listThumbRatio - 100)}%`
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    initial={false}
+                  />
+                  <motion.div
+                    aria-hidden="true"
+                    className="absolute left-0 top-0 w-full rounded-full pointer-events-none"
+                    style={{
+                      height: `${listThumbRatio * 100}%`,
+                      background: "rgb(20, 184, 166)"
+                    }}
+                    initial={{ opacity: 0.4, y: 0 }}
+                    animate={listScrollProgress > 0
+                      ? { opacity: 0 }
+                      : { opacity: [0.0, 0.35, 0.0], y: [`0%`, `${(100 / listThumbRatio - 100)}%`, `0%`] }}
+                    transition={listScrollProgress > 0
+                      ? { duration: 0.3 }
+                      : { duration: 2.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.6 }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Hint */}
